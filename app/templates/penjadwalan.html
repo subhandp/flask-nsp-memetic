@@ -1,0 +1,914 @@
+{% extends "base.html" %}
+
+{% block class_container %}container-fluid{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        .modal-dialog{
+            position: relative;
+            display: table; /* <-- This makes the trick */
+            overflow-y: auto;
+            overflow-x: auto;
+            width: auto;
+            min-width: 300px;
+        }
+    </style>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{{ url_for('static', filename='lib/datepicker/bootstrap-datepicker.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/jquery.mask.js')}}"></script>
+    <script>
+        var numb = 1;
+        $(".table-number").each(function() {
+          $(this).text(numb);
+          numb++;
+        });
+
+        $("#periode-date").mask("00/0000", {
+            placeholder: "00/0000"
+        });
+
+        var jumlah_hari=function(bulan,taun){
+            return new Date(taun,bulan,0).getDate();
+        }
+
+
+        $( "#generate-jadwal" ).on( "click", function() {
+          var d = $("#periode-date").val();
+                    console.log(d);
+        });
+
+    </script>
+{% endblock%}
+
+{%  block content %}
+<ul class="nav nav-tabs">
+  <li class="active" ><a href="#penjadwalan" data-toggle="tab" >Penjadwalan</a></li>
+  <li class="" ><a href="#pengaturan" data-toggle="tab">Pengaturan Penjadwalan</a></li>
+</ul>
+
+<div id="myTabContent" class="tab-content"> <!--#BEGIN MYTABCONTENT-->
+  <div class="tab-pane fade  active in" id="penjadwalan">
+     <br>
+
+     <div class="panel panel-default">
+      <div class="panel-body">
+
+          <row>
+            <div class="col-lg-12">
+
+              <button id="ubah-rest-pattern" class="btn btn-primary"> <i class="fa fa-refresh" aria-hidden="true"></i>  Generate Rest Pattern Shift from Latest Schedules</button>
+              <br>
+
+            <br>
+
+              <table class="table table-bordered table-responsive">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Nama</th>
+                    <th>Nip</th>
+                    <th>1</th>
+                    <th>2</th>
+                    <th>3</th>
+                    <th>4</th>
+                    <th>5</th>
+                    <th>6</th>
+                    <th>7</th>
+                    <th>8</th>
+                    <th>9</th>
+                    <th>10</th>
+                    <th>11</th>
+                    <th>12</th>
+                    <th>13</th>
+                    <th>14</th>
+                    <th>15</th>
+                    <th>16</th>
+                    <th>17</th>
+                    <th>18</th>
+                    <th>19</th>
+                    <th>20</th>
+                    <th>21</th>
+                    <th>22</th>
+                    <th>23</th>
+                    <th>24</th>
+                    <th>25</th>
+                    <th>26</th>
+                    <th>27</th>
+                    <th>28</th>
+                    <th>29</th>
+                    <th>30</th>
+                    <th>31</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="table-number">-</td>
+                    <td>{{ table['kr'].name }} ({{table['kr'].officer}})</td>
+                    <td>{{ table['kr'].nip|default('<unknown>', True) }}</td>
+                    {% for i in range(31) %}
+                        <td>-</td>
+                    {% endfor %}
+
+                    <td>
+                      <!-- <a href="#">Edit</a> -->
+                      <button type="button" class="btn btn-info btn-xs" data-toggle="modal" data-target="#myModal">Edit</button>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td><strong>TIM 1</strong></td>
+                  </tr>
+                  <tr>
+                    <td class="table-number">-</td>
+                    <td>{{ table['kt1'].name }} ({{table['kt1'].officer}})</td>
+                    <td>{{ table['kt1'].nip|default('<unknown>', True) }}</td>
+                    {% for i in range(31) %}
+                        <td>-</td>
+                    {% endfor %}
+                    <td>
+                      <button type="button" class="btn btn-info btn-xs" data-toggle="modal" data-target="#myModal">Edit</button>
+                    </td>
+                  </tr>
+                  {% for tim in table['tim1'] %}
+                  <tr>
+                    <td class="table-number">-</td>
+                    <td>{{ tim.name }} ({{tim.officer}})</td>
+                    <td>{{ tim.nip|default('<unknown>', True) }}</td>
+                    {% for i in range(31) %}
+                        <td>-</td>
+                    {% endfor %}
+                    <td>
+                      <button type="button" class="btn btn-info btn-xs" data-toggle="modal" data-target="#myModal">Edit</button>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                  <tr>
+                    <td><strong>TIM 2</strong></td>
+                  </tr>
+                  <tr>
+                    <td class="table-number">-</td>
+                    <td>{{ table['kt2'].name }} ({{table['kt2'].officer}})</td>
+                    <td>{{ table['kt2'].nip|default('<unknown>', True) }}</td>
+                    {% for i in range(31) %}
+                        <td>-</td>
+                    {% endfor %}
+                    <td>
+                      <button type="button" class="btn btn-info btn-xs" data-toggle="modal" data-target="#myModal">Edit</button>
+                    </td>
+                  </tr>
+                  {% for tim in table['tim2'] %}
+                  <tr>
+                    <td class="table-number">-</td>
+                    <td>{{ tim.name }} ({{tim.officer}})</td>
+                    <td>{{ tim.nip|default('<unknown>', True) }}</td>
+                    {% for i in range(31) %}
+                        <td>-</td>
+                    {% endfor %}
+                    <td>
+                      <button type="button" class="btn btn-info btn-xs" data-toggle="modal" data-target="#myModal">Edit</button>
+                    </td>
+                  </tr>
+                  {% endfor %}
+
+                </tbody>
+              </table>
+            </div>
+          </row>
+
+      </div>
+
+      <div class="panel-footer">
+           <div class="form-inline">
+                <div class="form-group">
+                  <label for="periode-date">Periode Jadwal:</label>
+                  <input type="text" id="periode-date" name="field-name" />
+                </div>
+
+                 <button id="generate-jadwal" class="btn btn-success" data-toggle="modal" data-target="#modal-proses"> <i class="fa fa-table" aria-hidden="true"></i>  Buat Jadwal</button>
+           </div>
+
+      </div>
+
+    </div>
+
+  </div>
+  <div class="tab-pane fade" id="pengaturan"> <!--BEGIN #pengaturan-->
+      <br>
+
+      <div class="row">
+          <div class="col-lg-6">
+            <div class="bs-component">
+              <div class="panel panel-primary">
+                <div class="panel-heading">
+                  <h3 class="panel-title"><li class="fa fa-cog"></li> Batasan Penjadwalan</h3>
+                </div>
+                <div class="panel-body">
+
+                    <form class="form">
+                      <row>
+                        <strong><p>SHIFT PAGI:</p></strong>
+                        <div class="col-lg-6">
+                          <div class="form-group">
+                            <label for="email">Senior (SN):</label>
+                            <input type="text" class="form-control" name="sn-pagi" value="3">
+                          </div>
+                        </div>
+                        <div>
+                          <div class="col-lg-6">
+                              <div class="form-group">
+                                <label for="pwd">Junior (JR):</label>
+                                <input type="text" class="form-control" name="jr-pagi" value="4">
+                              </div>
+                          </div>
+                        </div>
+                      </row>
+                      <row>
+                        <strong><p>SHIFT SIANG:</p></strong>
+                        <div class="col-lg-6">
+                          <div class="form-group">
+                            <label for="email">Senior (SN):</label>
+                            <input type="text" class="form-control" name="sn-siang" value="2">
+                          </div>
+                        </div>
+                        <div>
+                          <div class="col-lg-6">
+                              <div class="form-group">
+                                <label for="pwd">Junior (JR):</label>
+                                <input type="text" class="form-control" name="jr-siang" value="3">
+                              </div>
+                          </div>
+                        </div>
+                      </row>
+                      <row>
+                        <strong><p>SHIFT MALAM:</p></strong>
+                        <div class="col-lg-6">
+                          <div class="form-group">
+                            <label for="email">Senior (SN):</label>
+                            <input type="text" class="form-control" name="sn-malam" value="1">
+                          </div>
+                        </div>
+                        <div>
+                          <div class="col-lg-6">
+                              <div class="form-group">
+                                <label for="pwd">Junior (JR):</label>
+                                <input type="text" class="form-control" name="jr-malam" value="2">
+                              </div>
+                          </div>
+                        </div>
+                      </row>
+
+                    </form>
+
+                </div>
+                <div class="panel-footer"><button type="submit" class="btn btn-success"> <i class="fa fa-save"></i> Simpan</button></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6">
+            <div class="bs-component">
+
+              <div class="panel panel-primary">
+                <div class="panel-heading">
+                  <h3 class="panel-title"><li class="fa fa-cog"></li> Pengaturan Proses Algoritma</h3>
+                </div>
+                <div class="panel-body">
+
+                <form class="form">
+                      <row>
+                        <div class="col-lg-6">
+                          <div class="form-group">
+                            <label for="email">Generasi:</label>
+                            <input type="text" class="form-control" name="generasi" value="5000">
+                          </div>
+                        </div>
+                        <div>
+                          <div class="col-lg-6">
+                              <div class="form-group">
+                                <label for="pwd">Probabilitasi Mutasi:</label>
+                                <input type="text" class="form-control" name="prob-mutasi" value="0.1">
+                              </div>
+                          </div>
+                        </div>
+                                                <div class="col-lg-6">
+                          <div class="form-group">
+                            <label for="email">Probabilitas Rekombinasi:</label>
+                            <input type="text" class="form-control" name="prob-rekombinasi" value="0.8">
+                          </div>
+                        </div>
+                        <div>
+                          <div class="col-lg-6">
+                              <div class="form-group">
+                                <label for="pwd">Probabilitasi Local Search:</label>
+                                <input type="text" class="form-control" name="prob-local" value="0.5">
+                              </div>
+                          </div>
+                        </div>
+                      </row>
+
+                    </form>
+
+                </div>
+
+                <div class="panel-footer"><button type="submit" class="btn btn-success"> <i class="fa fa-save"></i> Simpan</button></div>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+
+  </div><!--END #pengaturan-->
+
+</div> <!--#END MYTABCONTENT-->
+
+
+<div id="myModal" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-lg">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">REST PATTERN SHIFT PERIODE <strong>2 Januari 2017</strong></h4>
+      </div>
+      <div class="modal-body">
+        <p><strong>Nama: </strong> Araya Wijaya</p>
+        <p><strong>NIP: </strong> 192168 991234</p>
+
+        <form>
+        <table class="table table-bordered table-responsive">
+          <thead>
+                  <tr>
+                    <th>1</th>
+                    <th>2</th>
+                    <th>3</th>
+                    <th>4</th>
+                    <th>5</th>
+                    <th>6</th>
+                    <th>7</th>
+                    <th>8</th>
+                    <th>9</th>
+                    <th>10</th>
+                    <th>11</th>
+                    <th>12</th>
+                    <th>13</th>
+                    <th>14</th>
+                    <th>15</th>
+                    <th>16</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <tr>
+                    <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                    <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                    <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                    <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                                        <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                                        <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                                        <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                                        <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                                        <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                                        <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                                        <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                                        <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                                        <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                                        <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                                        <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                    <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                  </tr>
+                  </tbody>
+        </table>
+        <table class="table table-bordered table-responsive">
+          <thead>
+                  <tr>
+                    <th>17</th>
+                    <th>18</th>
+                    <th>19</th>
+                    <th>20</th>
+                    <th>21</th>
+                    <th>22</th>
+                    <th>23</th>
+                    <th>24</th>
+                    <th>25</th>
+                    <th>26</th>
+                    <th>27</th>
+                    <th>28</th>
+                    <th>29</th>
+                    <th>30</th>
+                    <th>31</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <tr>
+                    <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                    <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                    <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                    <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                                        <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                                        <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                                        <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                                        <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                                        <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                                        <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                                        <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                                        <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                                        <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                                        <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+                                        <td>
+                      <select name="shift[]" id="">
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="O">O</option>
+                        <option value="-">-</option>
+                      </select>
+                    </td>
+
+                  </tr>
+                  </tbody>
+        </table>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success" > <i class="fa fa-save"></i> Simpan</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+<!-- Modal -->
+<div id="modal-proses" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Proses Penjadwalan Tenaga Kebidanan</h4>
+      </div>
+      <div class="modal-body">
+        <p><strong>Generasi: </strong>200 <strong>From: </strong> 5000</p>
+        <p><strong>Fitness: </strong> 0.15234</p>
+        <p><strong>Pelanggaran Batasan Keras: </strong> 15</p>
+        <p><strong>Pelanggaran Batasan Lunak: </strong> 10</p>
+        <button type="button" class="btn btn-danger "><i class="fa fa-stop"></i> Stop Proses</button><br>
+         <table class="table table-bordered table-responsive">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Nama</th>
+                    <th>Nip</th>
+                    <th>1</th>
+                    <th>2</th>
+                    <th>3</th>
+                    <th>4</th>
+                    <th>5</th>
+                    <th>6</th>
+                    <th>7</th>
+                    <th>8</th>
+                    <th>9</th>
+                    <th>10</th>
+                    <th>11</th>
+                    <th>12</th>
+                    <th>13</th>
+                    <th>14</th>
+                    <th>15</th>
+                    <th>16</th>
+                    <th>17</th>
+                    <th>18</th>
+                    <th>19</th>
+                    <th>20</th>
+                    <th>21</th>
+                    <th>22</th>
+                    <th>23</th>
+                    <th>24</th>
+                    <th>25</th>
+                    <th>26</th>
+                    <th>27</th>
+                    <th>28</th>
+                    <th>29</th>
+                    <th>30</th>
+                    <th>31</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>1</td>
+                    <td>Fitri Salim (KR)</td>
+                    <td>123456789</td>
+                    <td>P</td>
+                    <td>P</td>
+                    <td>P</td>
+                    <td>P</td>
+                    <td>O</td>
+                    <td>S</td>
+                    <td>S</td>
+                    <td>O</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+
+                  <tr>
+                    <td><strong>TIM 1</strong></td>
+                  </tr>
+                  <tr>
+                    <td>1</td>
+                    <td>Fitri Salim (KT)</td>
+                    <td>123456789</td>
+                    <td>P</td>
+                    <td>P</td>
+                    <td>P</td>
+                    <td>P</td>
+                    <td>O</td>
+                    <td>S</td>
+                    <td>S</td>
+                    <td>O</td>
+                    <td>M</td>
+                    <td>O</td>
+                    <td>M</td>
+                    <td>M</td>
+                    <td>O</td>
+                    <td>O</td>
+                    <td>S</td>
+                    <td>P</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>2</td>
+                    <td>Anugrah Rai (SN)</td>
+                    <td>87654321</td>
+                    <td>P</td>
+                    <td>P</td>
+                    <td>P</td>
+                    <td>P</td>
+                    <td>O</td>
+                    <td>S</td>
+                    <td>S</td>
+                    <td>O</td>
+                    <td>M</td>
+                    <td>O</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td><strong>TIM 2</strong></td>
+                  </tr>
+                  <tr>
+                    <td>2</td>
+                    <td>Anugrah Rai (KT)</td>
+                    <td>87654321</td>
+                    <td>P</td>
+                    <td>P</td>
+                    <td>P</td>
+                    <td>P</td>
+                    <td>O</td>
+                    <td>S</td>
+                    <td>S</td>
+                    <td>O</td>
+                    <td>M</td>
+                    <td>O</td>
+                    <td>M</td>
+                    <td>M</td>
+                    <td>O</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                </tbody>
+              </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success" >Save</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+{% endblock %}
+
+
+
+
+
+
