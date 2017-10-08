@@ -63,13 +63,15 @@ class Periode(db.Model):
 
 class Schedules(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    bidan_id = db.Column(db.Integer, nullable=False)
+    periode_id = db.Column(db.Integer, db.ForeignKey("periode.id"), nullable=False)
+    bidan_id = db.Column(db.Integer, db.ForeignKey("bidan.id"), nullable=False)
+    #bidan = db.relationship("Bidan", cascade="all", backref="Schedules")
     name = db.Column(db.String(50), nullable=False)
-    nip = db.Column(db.String(20))
+    nip = db.Column(db.String(20), nullable=True)
     officer = db.Column(db.String(20), nullable=False)
     tim = db.Column(db.String(10), nullable=False)
-    shift = db.Column(db.Text, nullable=False)
-    periode_id = db.Column(db.Integer, db.ForeignKey("periode.id"), nullable=False)
+    shift = db.Column(db.Text, nullable=True)
+    rest_shift = db.Column(db.Text, nullable=True)
 
     def __repr__(self):
         return '<Schedules %s>' % self.periode
@@ -77,16 +79,6 @@ class Schedules(db.Model):
     def __unicode__(self):
         return self.shift or ''
 
-class Pattern_rest_schedules(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    bidan_id = db.Column(db.Integer)
-    pattern_shift = db.Column(db.Text, nullable=False)
-
-    def __repr__(self):
-        return '<Pattern_schedules %s>' % self.id
-
-    def __unicode__(self):
-        return self.bidan_id or ''
 
 class Bidan(db.Model):
     id = db.Column(db.Integer, primary_key=True, nullable=False)
@@ -94,10 +86,10 @@ class Bidan(db.Model):
     nip = db.Column(db.String(20))
     officer = db.Column(db.String(20), nullable=False)
     tim = db.Column(db.String(10), nullable=False)
+    schedules = db.relationship("Schedules", cascade="all", backref="bidan")
 
     def __repr__(self):
-        return '<Bidan %s>' % self.bidan_name
+        return '<Bidan %s>' % self.name
 
     def __unicode__(self):
         return self.name or ''
-

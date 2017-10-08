@@ -1,8 +1,11 @@
 from models import *
+import datetime
 
 def first_data():
-    first_periode = Periode()
-    db.session.add(first_periode)
+    fp = []
+    fp.append(Periode(periode=datetime.date(2017, 10, 1)))
+    fp.append(Periode(periode=datetime.date(2017, 9, 1)))
+    db.session.add_all(fp)
     db.session.commit()
 
     n = []
