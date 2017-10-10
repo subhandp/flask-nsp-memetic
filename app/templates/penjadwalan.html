@@ -49,8 +49,19 @@
 
 
         $( "#generate-jadwal" ).on( "click", function() {
-          var d = $("#periode-date").val();
-                    console.log(d);
+            var id = $("[name='periode-id']").val();
+            var request = $.ajax({
+                url: window.location.pathname,
+                type: 'POST',
+                data: JSON.stringify({
+                  ajax: 'generate-jadwal',
+                  periode_id: id
+                }),
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+            });
+
+
         });
 
     </script>
@@ -207,7 +218,7 @@
                   <!--<label for="periode-date">Periode Jadwal:</label>-->
                   <!--<input type="text" id="periode-date" name="field-name" />-->
                 <!--</div>-->
-
+                 <input value="{{ periode.id }}" type="hidden" name="periode-id">
                  <button id="generate-jadwal" class="btn btn-success" data-toggle="modal" data-target="#modal-proses"> <i class="fa fa-table" aria-hidden="true"></i>  Buat Jadwal</button>
            </div>
 

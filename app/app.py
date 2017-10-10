@@ -9,6 +9,6 @@ app = Flask(__name__)
 app.config.from_object(Configuration) # use value from our Config
 db = SQLAlchemy(app)
 
-migrate = Migrate(app,db)
+migrate = Migrate(app, db)
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)

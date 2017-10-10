@@ -1,9 +1,8 @@
 from app import app, db
-from flask import render_template, flash  # , redirect, url_for, session, logging, request
-# from  flask_mysqldb import MySQL
+from flask import render_template, request  # , redirect, url_for, session, logging, request
 from models import Schedules, Bidan, Periode
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
-from memetika import nsp
+from nsp import generate_pattern_schedule, Memetic
 import datetime
 
 def create_schedule_db(periode_date):
@@ -33,22 +32,32 @@ def penjadwalan():
 
 @app.route("/penjadwalan/<slug>/", methods=['GET', 'POST'])
 def penjadwalan_proses(slug):
-    meme = nsp()
+    meme = Memetic()
+    if request.method == 'POST':
+        if request.json['ajax'] == 'generate-jadwal':
+            pass
+
     slug_date = slug.split("-")
-    periode_date = datetime.date(int(slug_date[1]), int(slug_date[0]), 1);
-    periode_db = Periode.query.filter(Periode.periode == periode_date).first()
-    if not periode_db:
-        create_schedule_db(periode_date)
-        meme.generate_pattern_schedule(periode_date)
-    else:
-        sch = Schedules.query.filter(Schedules.periode_id == periode_db.id).first()
-        if not sch.rest_shift or sch.rest_shift == "":
-            meme.generate_pattern_schedule(periode_date)
+    periode_date = datetime.date(int(slug_date[1]), int(slug_date[0]), 1)
+    if periode_date:
+        periode_db = Periode.query.filter(Periode.periode == periode_date).first()
+        if not periode_db:
+            create_schedule_db(periode_date)
+            generate_pattern_schedule(periode_date)
+        else:
+            sch = Schedules.query.filter(Schedules.periode_id == periode_db.id).first()
+            if not sch.rest_shift or sch.rest_shift == "":
+                generate_pattern_schedule(periode_date)
 
+        table_query = Bidan.query\
+            .join(Schedules)\
+            .join(Periode)\
+            .add_columns(Bidan.id, Bidan.name, Bidan.officer, Bidan.tim, Bidan.nip, Schedules.rest_shift, Schedules.id)\
+            .filter(Periode.periode == periode_date)\
 
-    table = {"kr": Bidan.query.filter(Bidan.officer == "KR").first(),
-             "kt1": Bidan.query.filter((Bidan.officer == "KT") & (Bidan.tim == "tim1")).first(),
-             "kt2": Bidan.query.filter((Bidan.officer == "KT") & (Bidan.tim == "tim2")).first(),
-             "tim1": Bidan.query.filter((Bidan.tim == "tim1") & (Bidan.officer != "KT")).order_by(Bidan.id.asc()).all(),
-             "tim2": Bidan.query.filter((Bidan.tim == "tim2") & (Bidan.officer != "KT")).order_by(Bidan.id.asc()).all()}
-    return render_template('penjadwalan.html', table=table, periode=slug)
+    table = {"kr": table_query.filter(Bidan.officer == "KR").first(),
+             "kt1": table_query.filter((Bidan.officer == "KT") & (Bidan.tim == "tim1")).first(),
+             "kt2": table_query.filter((Bidan.officer == "KT") & (Bidan.tim == "tim2")).first(),
+             "tim1": table_query.filter((Bidan.tim == "tim1") & (Bidan.officer != "KT")).order_by(Bidan.id.asc()).all(),
+             "tim2": table_query.filter((Bidan.tim == "tim2") & (Bidan.officer != "KT")).order_by(Bidan.id.asc()).all()}
+    return render_template('penjadwalan.html', table=table, periode=periode_db)
