@@ -1,6 +1,6 @@
 from app import db
 from models import Schedules, Bidan, Periode
-import random, operator
+import random, operator, json
 
 class Memetic():
     lingkungan_individu = []
@@ -27,6 +27,34 @@ class Memetic():
                                    "shift_siang": {"sn": 2, "jr": 3},
                                    "shift_malam": {"sn": 1, "jr": 2}}
 
+
+    def print_individu(self, individu):
+        for pr in [1, 2]:
+            full_individu = dict(self.individu_static.items() + individu.items())
+            for id, myindividu in full_individu.items():
+                rest_shift = self.bidan_w_schedule[id]["rest_shift"]
+                print id,
+                if rest_shift != "CLEAR":
+                    for shift in rest_shift:
+                        if pr == 1:
+                            print " %s [%s]" % (shift, self.bidan_w_schedule[id]["officer"]),
+                        elif pr == 2:
+                            print " %s " % (shift),
+                else:
+                    rest_shift = []
+
+                current_sch = self.hari - len(rest_shift)
+                for i in range(current_sch):
+                    if pr == 1:
+                        print " %s [%s]" % (full_individu[id][i], self.bidan_w_schedule[id]["officer"]),
+                    if pr == 2:
+                        print " %s " % (full_individu[id][i]),
+                print "\n\n"
+
+            print "\n\n"
+
+
+
     def get_pattern_schedule(self):
         current_bidan_schedule = Schedules.query \
             .join(Bidan) \
@@ -34,7 +62,10 @@ class Memetic():
             .filter(Schedules.periode_id == self.periode_id).all()
         for bdn_sch in current_bidan_schedule:
             rest_shift = bdn_sch.rest_shift
-            self.bidan_w_schedule[cur_bdn_sch.id] = {"officer": bdn_sch.officer, "rest_shift": rest_shift.split(",")}
+            ''.join(rest_shift.split())
+            if rest_shift != "CLEAR":
+                rest_shift = rest_shift.split(",")
+            self.bidan_w_schedule[bdn_sch.id] = {"officer": bdn_sch.officer, "rest_shift": rest_shift}
 
 
     def generate_random_shift(self):
@@ -47,12 +78,12 @@ class Memetic():
                 shift_bidan = shift_bidan[0:self.hari]
                 return shift_bidan
 
-
+    # print(json.dumps(self.lingkungan_individu[0], indent=4, sort_keys=False))
     def initial_populasi(self):
         static = ['P', 'P', 'P', 'P', 'P', 'P', 'O', 'P', 'P', 'P', 'P', 'P', 'P', 'O', 'P', 'P', 'P', 'P', 'P', 'P',
                   'O', 'P', 'P', 'P', 'P', 'P', 'P', 'O', 'P', 'P', 'P', 'P', 'P', 'P', 'O'];
-        static_shift = static[0, self.hari]
-        for i in range(populasi):
+        static_shift = static[0:self.hari]
+        for i in range(self.populasi):
             individu = {}
             for bdn in Bidan.query.all():
                 if bdn.officer == "SN" or bdn.officer == "JR":
@@ -62,9 +93,7 @@ class Memetic():
 
             self.lingkungan_individu.append(individu)
 
-
-    def print_individu(self):
-        pass
+        self.print_individu(self.lingkungan_individu[0])
 
 
     def fitness_min_bidan(self, individu, debug = False):
@@ -77,9 +106,9 @@ class Memetic():
                 if result[js]["sn"] < self.min_jenis_shift[js]["sn"]:
                     pelanggaran += 1
                 elif result[js]["sn"] >= self.min_jenis_shift[js]["sn"]:
-                    min_shift_pagi = self.min_jenis_shift[js]["sn"] + self.min_jenis_shift[js]["jr"]
-                    cur_shift_pagi = result[js]["sn"] + result[js]["jr"]
-                    if cur_shift_pagi < min_shift_pagi:
+                    min_total = self.min_jenis_shift[js]["sn"] + self.min_jenis_shift[js]["jr"]
+                    current_total = result[js]["sn"] + result[js]["jr"]
+                    if current_total < min_total:
                         pelanggaran += 1
 
             total_pelanggaran += pelanggaran
@@ -89,8 +118,10 @@ class Memetic():
                 print "---P [SN] = %d, [JR] = %d" % (result["shift_pagi"]["sn"], result["shift_pagi"]["jr"])
                 print "---S [SN] = %d, [JR] = %d" % (result["shift_siang"]["sn"], result["shift_siang"]["jr"])
                 print "---M [SN] = %d, [JR] = %d" % (result["shift_malam"]["sn"], result["shift_malam"]["jr"])
-                print "[MIN BIDAN] Total Pelanggaran: %d" % (pelanggaran)
 
+
+        if debug:
+            print "[MIN BIDAN] Total Pelanggaran: %d" % (total_pelanggaran)
         return total_pelanggaran
 
 
@@ -99,17 +130,17 @@ class Memetic():
                                 "shift_siang": {"sn": 0, "jr": 0},
                                 "shift_malam": {"sn": 0, "jr": 0}}
         for id, bdn_w_sch in self.bidan_w_schedule.items():
-            if bdn_w_sch["officer"] == "KT" or bdn_w_sch["officer"] == "KR":
-                my_individu = self.individu_static
-            else:
+            if bdn_w_sch["officer"] == "SN" or bdn_w_sch["officer"] == "JR":
                 my_individu = individu
+            else:
+                my_individu = self.individu_static
 
             if bdn_w_sch["rest_shift"] != "CLEAR":
+                total_rest_shift = len(bdn_w_sch["rest_shift"])
                 # jika 'hari' masih ada dalam 'rest shift'
-                if len(bdn_w_sch["rest_shift"])-1 >= hari:
+                if total_rest_shift-1 >= hari:
                     shift = bdn_w_sch["rest_shift"][hari]
                 else:
-                    total_rest_shift = len(bdn_w_sch["rest_shift"])
                     cur_hari = hari - total_rest_shift
                     shift = my_individu[id][cur_hari]
             else:
@@ -144,7 +175,6 @@ class Memetic():
                 result = self.min_bidan_shift_count(individu, hari)
                 if result[js_shift]["sn"] < self.min_jenis_shift[js_shift]["sn"] or result[js_shift]["jr"] < self.min_jenis_shift[js_shift]["jr"]:
                     jenis_bidan = ["sn", "jr"]
-
                     for js_bidan in jenis_bidan:
                         result = self.min_bidan_shift_count(individu, hari)
                         if result[js_shift][js_bidan] < self.min_jenis_shift[js_shift][js_bidan]:
@@ -300,8 +330,9 @@ class Memetic():
                     print "---M = %d" % (pelanggaran_off_malam)
                     print "---Off Day = %d" % (pelanggaran_off_day)
                     print "Off day kelebihan = %d" % (pelanggaran_off)
-                    print "[DAY OFF] Total Pelanggaran: %d" % (pelanggaran_total)
 
+        if debug:
+            print "[DAY OFF] Total Pelanggaran: %d" % (pelanggaran_total)
         return pelanggaran_total
 
 
@@ -446,30 +477,32 @@ class Memetic():
 
             pelanggaran_total += pelanggaran
 
+        if debug:
+            print "[PAIR SHIFT] TOTAL PELANGGARAN: %d" % (pelanggaran_total)
         return pelanggaran_total
 
 
     def move_pairshift_overflow(self):
-
         pass
 
     def fitness(self, debug=False):
         self.lingkungan_individu_fitness = []
         self.lingkungan_individu_fitness_interval = []
         total_fitness = 0
-        for individu in range(self.lingkungan_individu):
+        for individu in self.lingkungan_individu:
             fitness = 0
             fitness += self.fitness_min_bidan(individu) * self.hard_penalti
             fitness += self.fitness_day_off(individu) * self.hard_penalti
-            fitness += self.fitness_pairshift_overflow(individu)
-            normalisasi_fitness = 1 / (fitness + 1)
+            fitness += self.fitness_pairshift_overflow(individu) * self.soft_penalti
+            normalisasi_fitness = float(1) / (fitness+1)
             total_fitness += normalisasi_fitness
             self.lingkungan_individu_fitness.append(normalisasi_fitness)
 
-        if debug:
-            print self.lingkungan_individu_fitness
 
-        for index in len(self.lingkungan_individu_fitness):
+        if debug:
+            print(json.dumps(self.lingkungan_individu_fitness, indent=4, sort_keys=False))
+
+        for index in range(len(self.lingkungan_individu_fitness)):
             self.lingkungan_individu_fitness_interval.append({"awal": 0, "batas": 0})
             if index-1 < 0:
                 prev_key = 0
@@ -477,17 +510,20 @@ class Memetic():
                 prev_key = index-1
             batas_prev = self.lingkungan_individu_fitness_interval[prev_key]["batas"]
             awal = batas_prev
-            batas = batas_prev + (self.lingkungan_individu[index]/total_fitness)
+            batas = batas_prev + (self.lingkungan_individu_fitness[index]/total_fitness)
             self.lingkungan_individu_fitness_interval[index]["awal"] = awal
             self.lingkungan_individu_fitness_interval[index]["batas"] = batas
+        print "TOTAL FITNESS: %f" % (total_fitness)
 
+        self.print_individu(self.lingkungan_individu[0])
+        self.single_fitness(self.lingkungan_individu[0], True)
 
     def single_fitness(self, individu, debug=False):
         fitness = 0
         fitness += self.fitness_min_bidan(individu, debug) * self.hard_penalti
         fitness += self.fitness_day_off(individu, debug) * self.hard_penalti
-        fitness += self.fitness_pairshift_overflow(individu, debug)
-        normalisasi_fitness = 1 / (fitness+1)
+        fitness += self.fitness_pairshift_overflow(individu, debug) * self.soft_penalti
+        normalisasi_fitness = float(1) / (fitness+1)
         return normalisasi_fitness
 
 

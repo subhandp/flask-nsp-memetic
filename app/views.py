@@ -32,10 +32,6 @@ def penjadwalan():
 
 @app.route("/penjadwalan/<slug>/", methods=['GET', 'POST'])
 def penjadwalan_proses(slug):
-    meme = Memetic()
-    if request.method == 'POST':
-        if request.json['ajax'] == 'generate-jadwal':
-            pass
 
     slug_date = slug.split("-")
     periode_date = datetime.date(int(slug_date[1]), int(slug_date[0]), 1)
@@ -49,7 +45,14 @@ def penjadwalan_proses(slug):
             if not sch.rest_shift or sch.rest_shift == "":
                 generate_pattern_schedule(periode_date)
 
-        table_query = Bidan.query\
+    if request.method == 'POST':
+        if request.json['ajax'] == 'generate-jadwal':
+            print "GENERATE JADWAL"
+            meme = Memetic()
+            meme.initial_populasi()
+            meme.fitness()
+
+    table_query = Bidan.query\
             .join(Schedules)\
             .join(Periode)\
             .add_columns(Bidan.id, Bidan.name, Bidan.officer, Bidan.tim, Bidan.nip, Schedules.rest_shift, Schedules.id)\
