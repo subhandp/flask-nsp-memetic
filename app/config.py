@@ -6,7 +6,6 @@ class Configuration(object):
     SECRET_KEY = 'python head'
     SQLALCHEMY_DATABASE_URI = 'sqlite:///%s/nsp.db' % APPLICATION_DIR
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    #STATIC_DIR = os.path.join(APPLICATION_DIR, 'assets')
 
 # class Configuration(object):
 #     DEBUG = True

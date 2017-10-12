@@ -16,7 +16,7 @@ class Memetic():
     shift = [['P'], ['S'], ['M']]
     hari = 31
     populasi = 100
-    generasi = 5000
+    generasi = 1000
     periode_id = 3
     hard_penalti = 5
     soft_penalti = 1
@@ -27,6 +27,10 @@ class Memetic():
                                    "shift_siang": {"sn": 2, "jr": 3},
                                    "shift_malam": {"sn": 1, "jr": 2}}
 
+    def detail_solusi(self):
+        print "FITNESS TERTINGGI: %f" % (self.elit_individu["fitness"])
+        self.print_individu(self.elit_individu["individu"])
+        self.single_fitness(self.elit_individu["individu"], True)
 
     def print_individu(self, individu):
         for pr in [1, 2]:
@@ -37,7 +41,7 @@ class Memetic():
                 if rest_shift != "CLEAR":
                     for shift in rest_shift:
                         if pr == 1:
-                            print " %s [%s]" % (shift, self.bidan_w_schedule[id]["officer"]),
+                            print " %s [%s/r]" % (shift, self.bidan_w_schedule[id]["officer"]),
                         elif pr == 2:
                             print " %s " % (shift),
                 else:
@@ -93,7 +97,54 @@ class Memetic():
 
             self.lingkungan_individu.append(individu)
 
-        self.print_individu(self.lingkungan_individu[0])
+        #self.print_individu(self.lingkungan_individu[0])
+
+
+    def min_bidan_shift_count(self, individu, hari):
+        shift_count_result = {"shift_pagi": {"sn": 0, "jr": 0}, "shift_siang": {"sn": 0, "jr": 0}, "shift_malam": {"sn": 0, "jr": 0}}
+
+        for id, bdn_w_sch in self.bidan_w_schedule.items():
+            if bdn_w_sch["officer"] == "SN" or bdn_w_sch["officer"] == "JR":
+                my_individu = individu
+            else:
+                my_individu = self.individu_static
+
+            if bdn_w_sch["rest_shift"] != "CLEAR":
+                total_rest_shift = len(bdn_w_sch["rest_shift"])
+                # jika 'hari' masih ada dalam 'rest shift'
+                if total_rest_shift-1 >= hari:
+                    shift = bdn_w_sch["rest_shift"][hari]
+                else:
+                    cur_hari = hari - total_rest_shift
+                    shift = my_individu[id][cur_hari]
+            else:
+                shift = my_individu[id][hari]
+
+            if shift == "P":
+                if bdn_w_sch["officer"] == "SN" or bdn_w_sch["officer"] == "KT" or bdn_w_sch["officer"] == "KR":
+                    shift_count_result["shift_pagi"]["sn"] += 1
+                elif bdn_w_sch["officer"] == "JR":
+                    shift_count_result["shift_pagi"]["jr"] += 1
+            elif shift == "S":
+                if bdn_w_sch["officer"] == "SN" or bdn_w_sch["officer"] == "KT" or bdn_w_sch["officer"] == "KR":
+                    shift_count_result["shift_siang"]["sn"] += 1
+                elif bdn_w_sch["officer"] == "JR":
+                    shift_count_result["shift_siang"]["jr"] += 1
+            elif shift == "M":
+                if bdn_w_sch["officer"] == "SN" or bdn_w_sch["officer"] == "KT" or bdn_w_sch["officer"] == "KR":
+                    shift_count_result["shift_malam"]["sn"] += 1
+                elif bdn_w_sch["officer"] == "JR":
+                    shift_count_result["shift_malam"]["jr"] += 1
+
+        return shift_count_result
+
+    def min_bidan(self, individu, process="fitness", debug=False):
+        if process == "fitness":
+            total_fitness = self.fitness_min_bidan(individu, debug)
+            return total_fitness
+        elif process == "improvement":
+            individu = self.move_min_bidan(individu)
+            return individu
 
 
     def fitness_min_bidan(self, individu, debug = False):
@@ -125,55 +176,20 @@ class Memetic():
         return total_pelanggaran
 
 
-    def min_bidan_shift_count(self, individu, hari):
-        shift_count_result = {"shift_pagi": {"sn": 0, "jr": 0},
-                                "shift_siang": {"sn": 0, "jr": 0},
-                                "shift_malam": {"sn": 0, "jr": 0}}
-        for id, bdn_w_sch in self.bidan_w_schedule.items():
-            if bdn_w_sch["officer"] == "SN" or bdn_w_sch["officer"] == "JR":
-                my_individu = individu
-            else:
-                my_individu = self.individu_static
-
-            if bdn_w_sch["rest_shift"] != "CLEAR":
-                total_rest_shift = len(bdn_w_sch["rest_shift"])
-                # jika 'hari' masih ada dalam 'rest shift'
-                if total_rest_shift-1 >= hari:
-                    shift = bdn_w_sch["rest_shift"][hari]
-                else:
-                    cur_hari = hari - total_rest_shift
-                    shift = my_individu[id][cur_hari]
-            else:
-                shift = my_individu[id][hari]
-
-            if shift == "P":
-                if bdn_w_sch["officer"] == "SN" or bdn_w_sch["officer"] == "KT" or bdn_w_sch["officer"] == "KR":
-                    shift_count_result["shift_pagi"]["sn"] += 1
-                elif bdn_w_sch["officer"] == "JR":
-                    shift_count_result["shift_pagi"]["jr"] += 1
-            elif shift == "S":
-                if bdn_w_sch["officer"] == "SN":
-                    shift_count_result["shift_siang"]["sn"] += 1
-                elif bdn_w_sch["officer"] == "JR":
-                    shift_count_result["shift_siang"]["jr"] += 1
-            elif shift == "M":
-                if bdn_w_sch["officer"] == "SN":
-                    shift_count_result["shift_malam"]["sn"] += 1
-                elif bdn_w_sch["officer"] == "JR":
-                    shift_count_result["shift_malam"]["jr"] += 1
-
-        return shift_count_result
-
-
     def move_min_bidan(self, individu):
-        for hari in self.hari:
-            jenis_shift = {"shift_pagi": {"need": "P", "more1": "S", "more2": "M", "jenis_more1": "shift_siang", "jenis_more2": "shift_malam"},
-                           "shift_siang": {"need": "S", "more1": "P", "more2": "M", "jenis_more1": "shift_pagi", "jenis_more2": "shift_malam"},
-                           "shift_malam": {"need": "M", "more1": "P", "more2": "S", "jenis_more1": "shift_pagi", "jenis_more2": "shift_siang"}}
+        for hari in range(self.hari):
+
+            jenis_shift = {"shift_pagi": {"need": "P", "more1": "S", "more2": "M", "jenis_more1": "shift_siang",
+                                          "jenis_more2": "shift_malam"},
+                           "shift_siang": {"need": "S", "more1": "P", "more2": "M", "jenis_more1": "shift_pagi",
+                                           "jenis_more2": "shift_malam"},
+                           "shift_malam": {"need": "M", "more1": "P", "more2": "S", "jenis_more1": "shift_pagi",
+                                           "jenis_more2": "shift_siang"}}
 
             for js_shift, js_shift_data in jenis_shift.items():
                 result = self.min_bidan_shift_count(individu, hari)
                 if result[js_shift]["sn"] < self.min_jenis_shift[js_shift]["sn"] or result[js_shift]["jr"] < self.min_jenis_shift[js_shift]["jr"]:
+
                     jenis_bidan = ["sn", "jr"]
                     for js_bidan in jenis_bidan:
                         result = self.min_bidan_shift_count(individu, hari)
@@ -191,9 +207,9 @@ class Memetic():
 
 
     def move_min_bidan_improve(self, individu, data):
-        total_more1 = 0
-        total_more2 = 0
+        total_more1, total_more2 = 0, 0
         total_need = data["need_min_shift"] - data["need_current"]
+
         if data["shift_current_more1"] > data["shift_min_more1"]:
             total_more1 = data["shift_current_more1"] - data["shift_min_more1"]
         if data["shift_current_more2"] > data["shift_min_more2"]:
@@ -225,31 +241,35 @@ class Memetic():
                             individu[id][cur_hari-1] = "P"
                             total_more1 -= 1
                             total_need -= 1
+
                         if shift == shift_more2 and total_more2 > 0 and total_need > 0:
                             individu[id][cur_hari] = shift_need
                             individu[id][cur_hari-1] = "P"
                             total_more2 -= 1
                             total_need -= 1
+                        #
+                        # if shift == "O" and total_need > 0:
+                        #     individu[id][cur_hari] = shift_need
+                        #     individu[id][cur_hari-1] = "P"
+                        #     individu[id][cur_hari-2] = "P"
+                        #     total_need -= 1
 
         return individu
 
 
-    def fitness_day_off(self, individu, debug = False):
+    def day_off(self, individu, process="fitness", debug=False):
         pelanggaran_total = 0
         for id, bdn_w_sch in self.bidan_w_schedule.items():
-            pelanggaran_off_siang = 0
-            pelanggaran_off_malam = 0
-            pelanggaran_off_day = 0
-            pelanggaran_off = 0
-            siang = 0
-            malam = 0
-            off = 0
+
+            pelanggaran_off_siang, pelanggaran_off_malam = 0, 0
+            pelanggaran_off_day, pelanggaran_off = 0, 0
+            siang, malam, off = 0, 0, 0
 
             if bdn_w_sch["officer"] == "SN" or bdn_w_sch["officer"] == "JR":
                 restshift = bdn_w_sch["rest_shift"]
                 for hari in range(self.hari):
                     if restshift != "CLEAR":
-                        if len(restshift)-1 >= hari:
+                        if len(restshift) - 1 >= hari:
                             shift = None
                         else:
                             total_restshift = len(restshift)
@@ -261,12 +281,12 @@ class Memetic():
 
                     if shift:
                         if hari + 1 <= self.hari - 1:
-                            nextshift = individu[id][cur_hari+1]
+                            nextshift = individu[id][cur_hari + 1]
                         else:
                             nextshift = "E"
 
                         if hari + 2 <= self.hari - 1:
-                            next2shift = individu[id][cur_hari+2]
+                            next2shift = individu[id][cur_hari + 2]
                         else:
                             next2shift = "E"
 
@@ -275,28 +295,47 @@ class Memetic():
                         siang = 0
                         malam = 0
                         if off > 2:
-                            pelanggaran_off += 1
+
+                            if process == "fitness":
+                                pelanggaran_off += 1
+                            elif process == "improvement":
+                                individu[id][cur_hari] = "P"
                             off = 0
                     elif shift == "P":
                         siang = 0
                         malam = 0
                         off = 0
                         if nextshift == "O":
-                            pelanggaran_off_day += 1
+
+                            if process == "fitness":
+                                pelanggaran_off_day += 1
+                            elif process == "improvement":
+                                individu[id][cur_hari + 1] = "P"
                     elif shift == "S":
                         malam = 0
                         off = 0
                         if siang == 0:
                             if nextshift == "O":
-                                pelanggaran_off_siang += 1
+
+                                if process == "fitness":
+                                    pelanggaran_off_siang += 1
+                                elif process == "improvement":
+                                    individu[id][cur_hari + 1] = "P"
                             else:
                                 siang += 1
                         elif siang == 1:
                             if nextshift != "O" and nextshift != "E":
-                                pelanggaran_off_siang += 1
-                                #siang = 0
+
+                                if process == "fitness":
+                                    pelanggaran_off_siang += 1
+                                elif process == "improvement":
+                                    individu[id][cur_hari + 1] = "O"
                             elif next2shift == "O":
-                                pelanggaran_off_siang += 1
+
+                                if process == "fitness":
+                                    pelanggaran_off_siang += 1
+                                elif process == "improvement":
+                                    individu[id][cur_hari + 2] = "P"
                             siang = 0
                         else:
                             siang += 1
@@ -305,15 +344,28 @@ class Memetic():
                         off = 0
                         if malam == 0 and nextshift != "M" and nextshift != "E":
                             if nextshift == "O" and next2shift == "O":
-                                pelanggaran_off_malam += 1
+
+                                if process == "fitness":
+                                    pelanggaran_off_malam += 1
+                                elif process == "improvement":
+                                    individu[id][cur_hari + 2] = "P"
                             if nextshift != "O" and nextshift != "E":
-                                pelanggaran_off_malam += 1
-                                malam = 0
+
+                                if process == "fitness":
+                                    pelanggaran_off_malam += 1
+                                elif process == "improvement":
+                                    individu[id][cur_hari + 1] = "O"
+                                    malam = 0
                         elif malam == 1:
                             if nextshift == "O" and next2shift == "O" or nextshift == "E" or next2shift == "E":
                                 nxt = None
                             else:
-                                pelanggaran_off_malam += 1
+
+                                if process == "fitness":
+                                    pelanggaran_off_malam += 1
+                                elif process == "improvement":
+                                    individu[id][cur_hari + 1] = "O"
+                                    individu[id][cur_hari + 2] = "O"
                             malam = 0
                         else:
                             malam += 1
@@ -333,92 +385,15 @@ class Memetic():
 
         if debug:
             print "[DAY OFF] Total Pelanggaran: %d" % (pelanggaran_total)
-        return pelanggaran_total
+
+        if process == "fitness":
+            return pelanggaran_total
+        elif process == "improvement":
+            return individu
 
 
-    def move_day_off(self, individu):
-        for id, bdn_w_sch in self.bidan_w_schedule.items():
-            if bdn_w_sch["officer"] == "SN" or bdn_w_sch["officer"] == "JR":
-                restshift = bdn_w_sch["rest_shift"]
-                for hari in range(self.hari):
-                    if restshift != "CLEAR":
-                        if len(restshift)-1 >= hari:
-                            shift = None
-                        else:
-                            total_restshift = len(restshift)
-                            cur_hari = hari - total_restshift
-                            shift = individu[id][cur_hari]
-                    else:
-                        cur_hari = hari
-                        shift = individu[id][cur_hari]
 
-                    if shift:
-                        if hari + 1 <= self.hari - 1:
-                            nextshift = individu[id][cur_hari+1]
-                        else:
-                            nextshift = "E"
-
-                        if hari + 2 <= self.hari - 1:
-                            next2shift = individu[id][cur_hari+2]
-                        else:
-                            next2shift = "E"
-
-                    if shift == "O":
-                        off += 1
-                        siang = 0
-                        malam = 0
-                        if off > 2:
-                            individu[id][cur_hari] = "P"
-                            off = 0
-                    elif shift == "P":
-                        siang = 0
-                        malam = 0
-                        off = 0
-                        if nextshift == "O":
-                            individu[id][cur_hari+1] = "P"
-                    elif shift == "S":
-                        malam = 0
-                        off = 0
-                        if siang == 0:
-                            if nextshift == "O":
-                                individu[id][cur_hari+1] = "P"
-                            else:
-                                siang += 1
-                        elif siang == 1:
-                            if nextshift != "O" and nextshift != "E":
-                                individu[id][cur_hari+1] = "O"
-                            elif next2shift == "O":
-                                individu[id][cur_hari+2] = "P"
-                            siang = 0
-                        else:
-                            siang += 1
-                    elif shift == "M":
-                        siang = 0
-                        off = 0
-                        if malam == 0 and nextshift != "M" and nextshift != "E":
-                            if nextshift == "O" and next2shift == "O":
-                                individu[id][cur_hari+2] = "P"
-                            if nextshift != "O" and nextshift != "E":
-                                individu[id][cur_hari+1] = "O"
-                                malam = 0
-                        elif malam == 1:
-                            if nextshift == "O" and next2shift == "O" or nextshift == "E" or next2shift == "E":
-                                nxt = None
-                            else:
-                                individu[id][cur_hari+1] = "O"
-                                individu[id][cur_hari+2] = "O"
-                            malam = 0
-                        else:
-                            malam += 1
-                    else:
-                        siang = 0
-                        malam = 0
-                        off = 0
-
-        return individu
-
-
-    def fitness_pairshift_overflow(self, individu, debug = False):
+    def pairshift_overflow(self, individu, debug = False):
         pelanggaran_total = 0
         for id, bdn_w_sch in self.bidan_w_schedule.items():
             pelanggaran = 0
@@ -482,18 +457,15 @@ class Memetic():
         return pelanggaran_total
 
 
-    def move_pairshift_overflow(self):
-        pass
-
     def fitness(self, debug=False):
         self.lingkungan_individu_fitness = []
         self.lingkungan_individu_fitness_interval = []
         total_fitness = 0
         for individu in self.lingkungan_individu:
             fitness = 0
-            fitness += self.fitness_min_bidan(individu) * self.hard_penalti
-            fitness += self.fitness_day_off(individu) * self.hard_penalti
-            fitness += self.fitness_pairshift_overflow(individu) * self.soft_penalti
+            fitness += self.min_bidan(individu, "fitness") * self.hard_penalti
+            fitness += self.day_off(individu, "fitness") * self.hard_penalti
+            fitness += self.pairshift_overflow(individu) * self.soft_penalti
             normalisasi_fitness = float(1) / (fitness+1)
             total_fitness += normalisasi_fitness
             self.lingkungan_individu_fitness.append(normalisasi_fitness)
@@ -513,16 +485,23 @@ class Memetic():
             batas = batas_prev + (self.lingkungan_individu_fitness[index]/total_fitness)
             self.lingkungan_individu_fitness_interval[index]["awal"] = awal
             self.lingkungan_individu_fitness_interval[index]["batas"] = batas
-        print "TOTAL FITNESS: %f" % (total_fitness)
 
-        self.print_individu(self.lingkungan_individu[0])
-        self.single_fitness(self.lingkungan_individu[0], True)
+        # print "TOTAL FITNESS: %f" % (total_fitness)
+        #
+        # print "\n\n++++++++++++++++++++++++START IMPROVEMENT+++++++++++++++++++++++++++\n\n"
+        # self.print_individu(self.lingkungan_individu[0])
+        # self.single_fitness(self.lingkungan_individu[0], True)
+        # print "\n\n++++++++++++++++++++++++IMPROVEMENT+++++++++++++++++++++++++++\n\n"
+        # ip = self.min_bidan(self.lingkungan_individu[0], "improvement", debug)
+        # self.print_individu(ip)
+        # self.single_fitness(ip, True)
+
 
     def single_fitness(self, individu, debug=False):
         fitness = 0
-        fitness += self.fitness_min_bidan(individu, debug) * self.hard_penalti
-        fitness += self.fitness_day_off(individu, debug) * self.hard_penalti
-        fitness += self.fitness_pairshift_overflow(individu, debug) * self.soft_penalti
+        fitness += self.min_bidan(individu, "fitness", debug) * self.hard_penalti
+        fitness += self.day_off(individu, "fitness", debug) * self.hard_penalti
+        fitness += self.pairshift_overflow(individu, debug) * self.soft_penalti
         normalisasi_fitness = float(1) / (fitness+1)
         return normalisasi_fitness
 
@@ -541,6 +520,9 @@ class Memetic():
             parent1 = self.roulette_wheel(random.uniform(0, 1))
             parent2 = self.roulette_wheel(random.uniform(0, 1))
             self.parents_individu.append([parent1, parent2])
+        # print len(self.parents_individu)
+        # print(json.dumps(self.parents_individu, indent=4, sort_keys=False))
+
 
 
     def recombination(self):
@@ -548,21 +530,22 @@ class Memetic():
             rand_val = random.uniform(0, 1)
             if rand_val <= self.probabilitas_rekombinasi:
                 #REKOMBINASI ONE POINT COLUMN
-                rand_col = random.randint(1, self.hari - 1)
+                rand_col = random.randint(1, self.hari-1)
                 parent1 = {"slice1": [], "slice2": []}
                 parent2 = {"slice1": [], "slice2": []}
-                anak1 = {}
-                anak2 = {}
-                for individu_row in self.lingkungan_individu[parent[0]]:
+                anak1, anak2 = {}, {}
+
+
+                for id, individu_row in self.lingkungan_individu[parent[0]].items():
                     parent1["slice1"].append(individu_row[0:rand_col])
                     parent1["slice2"].append(individu_row[rand_col:])
 
-                for individu_row in self.lingkungan_individu[parent[1]]:
+                for id, individu_row in self.lingkungan_individu[parent[1]].items():
                     parent2["slice1"].append(individu_row[0:rand_col])
                     parent2["slice2"].append(individu_row[rand_col:])
 
                 index = 0
-                for id, bdn_w_sch in self.bidan_w_schedule:
+                for id, bdn_w_sch in self.bidan_w_schedule.items():
                     if bdn_w_sch["officer"] == "SN" or bdn_w_sch["officer"] == "JR":
                         anak1[id] = parent1["slice1"][index] + parent2["slice2"][index]
                         anak2[id] = parent2["slice1"][index] + parent1["slice2"][index]
@@ -575,20 +558,18 @@ class Memetic():
                 self.temp_lingkungan_individu.append(self.lingkungan_individu[parent[1]])
 
 
-
     def mutation(self):
         for individu_index in range(len(self.temp_lingkungan_individu)):
             rand_value = random.uniform(0, 1)
             if rand_value <= self.probabilitas_mutasi:
                 kind = random.randint(0, 1)
                 if kind == 0:
-                    rand_col = random.randint(0, self.hari - 1)
+                    rand_col = random.randint(0, self.hari-1)
                     rand_col_val = ["P", "S", "M"]
-                    index = 0
-                    for individu in self.temp_lingkungan_individu[individu_index]:
+                    for id, individu in self.temp_lingkungan_individu[individu_index].items():
                         index_col = random.randint(0, len(rand_col_val) - 1)
                         mutation_col = rand_col_val[index_col]
-                        self.temp_lingkungan_individu[individu][index][rand_col] = mutation_col
+                        self.temp_lingkungan_individu[individu_index][id][rand_col] = mutation_col
                 elif kind == 1:
                     individu_id = self.temp_lingkungan_individu[individu_index].keys()
                     rand_id = random.randint(0, len(individu_id) - 1)
@@ -598,21 +579,20 @@ class Memetic():
 
     def local_search(self):
         for index in range(len(self.temp_lingkungan_individu)):
-            rand_value = random.uniform(0, 1)
-            if rand_value < self.probabilitas_local_search:
-                individu = self.temp_lingkungan_individu[index]
+                rand_value = random.uniform(0, 1)
+                if rand_value < self.probabilitas_local_search:
+                    individu = self.temp_lingkungan_individu[index]
+                    current_fitness = self.single_fitness(individu)
 
-                current_fitness = self.single_fitness(individu)
-                individu_improvement = self.move_min_bidan(individu)
+                    individu_improvement = self.min_bidan(individu, "improvement")
+                    individu_improvement = self.day_off(individu_improvement, "improvement")
 
-                individu_improvement = self.move_day_off(individu_improvement)
-                fitness_improvement = self.single_fitness(individu_improvement)
+                    fitness_improvement = self.single_fitness(individu_improvement)
 
-                if fitness_improvement > current_fitness:
-                    individu = individu_improvement
-                    current_fitness = fitness_improvement
+                    if fitness_improvement > current_fitness:
+                        individu = individu_improvement
 
-                self.temp_lingkungan_individu[index] = individu
+                    self.temp_lingkungan_individu[index] = individu
 
 
     def elitist(self):
@@ -625,9 +605,21 @@ class Memetic():
         #REMOVE WORSE INDIVIDU
         total_remove = len(self.lingkungan_individu_fitness) - self.populasi
         total_remove += self.elit_individu["total_elit"]
+
+        # fitness_sort_asc = sorted(range(len(self.lingkungan_individu_fitness)), key=lambda k: self.lingkungan_individu_fitness[k])
+        # remove_individu = fitness_sort_asc[0:total_remove]
+        # lf = len(self.lingkungan_individu_fitness)
+        # ll = len(self.lingkungan_individu)
+        # print "%d - %d" % (lf, ll)
+        # print remove_individu
+        # for index in remove_individu:
+        #     del self.lingkungan_individu[index]
+
         for i in range(total_remove):
             index, value = min(enumerate(self.lingkungan_individu_fitness), key=operator.itemgetter(1))
             del self.lingkungan_individu[index]
+            del self.lingkungan_individu_fitness[index]
+
         for i in range(self.elit_individu["total_elit"]):
             self.lingkungan_individu.append(self.elit_individu["individu"])
 
@@ -637,12 +629,13 @@ class Memetic():
         self.temp_lingkungan_individu = []
         self.fitness()
         self.elitist()
-        pass
+        # print(json.dumps(self.elit_individu, indent=4, sort_keys=False))
 
     def termination(self, generasi):
         print "%d. %f" % (generasi, self.elit_individu["fitness"])
-        min_fitness = min(self.elit_individu["fitness"])
-        max_fitness = max(self.elit_individu["fitness"])
+
+        min_fitness = min(self.lingkungan_individu_fitness)
+        max_fitness = max(self.lingkungan_individu_fitness)
         if min_fitness == max_fitness:
             print "TERMINASI TERPENUHI - KONVERGENSI FITNESS"
             return True

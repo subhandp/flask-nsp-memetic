@@ -1,5 +1,5 @@
 from app import app, db
-from flask import render_template, request  # , redirect, url_for, session, logging, request
+from flask import render_template, request, abort  # , redirect, url_for, session, logging, request
 from models import Schedules, Bidan, Periode
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from nsp import generate_pattern_schedule, Memetic
@@ -33,24 +33,58 @@ def penjadwalan():
 @app.route("/penjadwalan/<slug>/", methods=['GET', 'POST'])
 def penjadwalan_proses(slug):
 
-    slug_date = slug.split("-")
-    periode_date = datetime.date(int(slug_date[1]), int(slug_date[0]), 1)
-    if periode_date:
-        periode_db = Periode.query.filter(Periode.periode == periode_date).first()
-        if not periode_db:
-            create_schedule_db(periode_date)
-            generate_pattern_schedule(periode_date)
-        else:
-            sch = Schedules.query.filter(Schedules.periode_id == periode_db.id).first()
-            if not sch.rest_shift or sch.rest_shift == "":
+    try:
+        slug_date = slug.split("-")
+        periode_date = datetime.date(int(slug_date[1]), int(slug_date[0]), 1)
+        if periode_date:
+            periode_db = Periode.query.filter(Periode.periode == periode_date).first()
+            if not periode_db:
+                create_schedule_db(periode_date)
                 generate_pattern_schedule(periode_date)
+            else:
+                sch = Schedules.query.filter(Schedules.periode_id == periode_db.id).first()
+                if not sch.rest_shift or sch.rest_shift == "":
+                    generate_pattern_schedule(periode_date)
 
-    if request.method == 'POST':
-        if request.json['ajax'] == 'generate-jadwal':
-            print "GENERATE JADWAL"
-            meme = Memetic()
-            meme.initial_populasi()
-            meme.fitness()
+            if request.method == 'POST':
+                if request.json['ajax'] == 'generate-jadwal':
+                    if request.method == 'POST':
+                        if request.json['ajax'] == 'generate-jadwal':
+                            print "GENERATE JADWAL"
+                            meme = Memetic()
+                            meme.initial_populasi()
+                            for generasi in range(meme.generasi):
+                                meme.fitness()
+                                meme.selection()
+                                meme.recombination()
+                                meme.mutation()
+                                meme.local_search()
+                                meme.population_replacement()
+                                if meme.termination(generasi):
+                                    break
+
+                            meme.detail_solusi()
+
+    except Exception as e:
+        abort(404)
+
+
+    # if request.method == 'POST':
+    #     if request.json['ajax'] == 'generate-jadwal':
+    #         print "GENERATE JADWAL"
+    #         meme = Memetic()
+    #         meme.initial_populasi()
+    #         for generasi in range(meme.generasi):
+    #             meme.fitness()
+    #             meme.selection()
+    #             meme.recombination()
+    #             meme.mutation()
+    #             meme.local_search()
+    #             meme.population_replacement()
+    #             if meme.termination(generasi):
+    #                 break
+    #
+    #         meme.detail_solusi()
 
     table_query = Bidan.query\
             .join(Schedules)\
