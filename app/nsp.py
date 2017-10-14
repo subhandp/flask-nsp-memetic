@@ -3,29 +3,31 @@ from models import Schedules, Bidan, Periode
 import random, operator, json
 
 class Memetic():
+    individu_static = {}
+    bidan_w_schedule = {}
     lingkungan_individu = []
     temp_lingkungan_individu = []
-    individu_static = {}
     lingkungan_individu_fitness = []
     lingkungan_individu_fitness_interval = []
     elit_individu = {"fitness": 0, "individu": None, "total_elit": 2}
-    bidan_w_schedule = {}
-    probabilitas_rekombinasi = 0.8
-    probabilitas_mutasi = 0.1
-    probabilitas_local_search = 0.5
     shift = [['P'], ['S'], ['M']]
-    hari = 31
-    populasi = 100
-    generasi = 1000
-    periode_id = 3
     hard_penalti = 5
     soft_penalti = 1
 
-    def __init__(self):
+    def __init__(self, init_data):
+        self.min_jenis_shift = {
+            "shift_pagi": {"sn": int(init_data["shift_pagi_sn"]), "jr": int(init_data["shift_pagi_jr"])},
+            "shift_siang": {"sn": int(init_data["shift_siang_sn"]), "jr": int(init_data["shift_siang_jr"])},
+            "shift_malam": {"sn": int(init_data["shift_malam_sn"]), "jr": int(init_data["shift_malam_jr"])}
+        }
+        self.hari = init_data["days"]
+        self.periode_id = init_data["periode_id"]
+        self.populasi = int(init_data["populasi"])
+        self.generasi = int(init_data["generasi"])
+        self.probabilitas_mutasi = float(init_data["prob_mutasi"])
+        self.probabilitas_rekombinasi = float(init_data["prob_rekombinasi"])
+        self.probabilitas_local_search = float(init_data["prob_local_search"])
         self.get_pattern_schedule()
-        self.min_jenis_shift = {"shift_pagi": {"sn": 4, "jr": 3},
-                                   "shift_siang": {"sn": 2, "jr": 3},
-                                   "shift_malam": {"sn": 1, "jr": 2}}
 
     def detail_solusi(self):
         print "FITNESS TERTINGGI: %f" % (self.elit_individu["fitness"])
@@ -636,6 +638,13 @@ class Memetic():
 
         min_fitness = min(self.lingkungan_individu_fitness)
         max_fitness = max(self.lingkungan_individu_fitness)
+
+        f = open('scheduling_process.txt', 'r')
+        scheduling_process = f.read()
+
+        if scheduling_process == "false":
+            print "PROSESS STOPED FROM CLIENT"
+            return True
         if min_fitness == max_fitness:
             print "TERMINASI TERPENUHI - KONVERGENSI FITNESS"
             return True

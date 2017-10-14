@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% from "macro/form_field.html" import form_field %}
+{% block class_container %}container{% endblock %}
+{% block nav_setting %} active {% endblock %}
+{% block extra_styles %}
+{% endblock %}
+
+{% block extra_scripts %}
+{% endblock%}
+
+{%  block content %}
+<div class="row">
+          <div class="col-lg-6">
+            <div class="bs-component">
+              <div class="panel panel-primary">
+                <div class="panel-heading">
+                  <h3 class="panel-title"><li class="fa fa-cog"></li> Batasan Penjadwalan</h3>
+                </div>
+                  <form action="{{url_for('setting')}}" id="setting-min-bidan" class="form" method="post">
+                    <div class="panel-body">
+                            {%  for field in min_bidan_form %}
+                                {{ form_field(field) }}
+                            {% endfor %}
+                    </div>
+                    <div class="panel-footer"><button type="submit" class="btn btn-success"> <i class="fa fa-save"></i> Simpan</button></div>
+                  </form>
+              </div>
+            </div>
+          </div>
+
+           <div class="col-lg-6">
+            <div class="bs-component">
+              <div class="panel panel-primary">
+                <div class="panel-heading">
+                  <h3 class="panel-title"><li class="fa fa-cog"></li> Pengaturan Proses Algoritma</h3>
+                </div>
+                  <form action="{{url_for('setting')}}" id="proses-algoritma" class="form" method="post">
+                    <div class="panel-body">
+                            {%  for field in proses_algo_form %}
+                                {{ form_field(field) }}
+                            {% endfor %}
+                    </div>
+                    <div class="panel-footer"><button type="submit" class="btn btn-success"> <i class="fa fa-save"></i> Simpan</button></div>
+                  </form>
+              </div>
+            </div>
+          </div>
+
+  </div>
+{% endblock %}

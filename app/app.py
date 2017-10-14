@@ -16,7 +16,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # app.config.from_object(Configuration) # use value from our Config
 
 db = SQLAlchemy(app)
-
-migrate = Migrate(app, db)
-manager = Manager(app)
-manager.add_command('db', MigrateCommand)
+#
+# migrate = Migrate(app, db)
+# manager = Manager(app)
+# manager.add_command('db', MigrateCommand)

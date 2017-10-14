@@ -56,9 +56,13 @@ class Periode(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     periode = db.Column(db.Date, default=datetime.datetime.now, nullable=False)
     schedules = db.relationship("Schedules", cascade="all,delete-orphan", backref="periode")
+    # status = db.Column(db.Integer, default=0, nullable=False)
 
     def __repr__(self):
         return '<Periode %s>' % self.periode
+
+    def __unicode__(self):
+        return self.periode.strftime("%B %Y") or ''
 
 
 class Schedules(db.Model):
@@ -70,8 +74,8 @@ class Schedules(db.Model):
     nip = db.Column(db.String(20), nullable=True)
     officer = db.Column(db.String(20), nullable=False)
     tim = db.Column(db.String(10), nullable=False)
-    shift = db.Column(db.Text, nullable=True)
-    rest_shift = db.Column(db.Text, nullable=True)
+    shift = db.Column(db.Text, default="", nullable=True)
+    rest_shift = db.Column(db.Text, default="", nullable=True)
 
     def __repr__(self):
         return '<Schedules %s>' % self.periode

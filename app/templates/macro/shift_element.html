@@ -1,0 +1,29 @@
+{% macro shift_element(table,days) %}
+  {% set rest_len = 0 %}
+  {% if table.rest_shift %}
+  	{% set rest_len = table.rest_shift|length %}
+    {% for i in range(rest_len) %}
+        {% if table.rest_shift[i] %}
+            <td><strong>{{table.rest_shift[i]}}</strong></td>
+        {% else %}
+            <td>-</td>
+        {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  {% if table.shift %}
+  	{% set n = rest_len-1 %}
+    {% for i in range(days-rest_len) %}
+        {% if table.shift[n] %}
+            <td>{{table.shift[n+loop.index]}}</td>
+        {% else %}
+            <td>-</td>
+        {% endif %}
+    {% endfor %}
+  {% else %}
+    {% for i in range(days-rest_len) %}
+        <td>-</td>
+    {% endfor %}
+  {% endif %}
+
+{% endmacro %}

@@ -1,126 +1,119 @@
 {% extends "base.html" %}
+{% from "macro/shift_element.html" import shift_element %}
+{% block class_container %}container-fluid{% endblock %}
+{% block nav_home %} active {% endblock %}
+{% block extra_scripts %}
+    <script>
+    	$( "#select-periode" ).val('{{periode_value}}');
 
-{% block class_container %}container{% endblock %}
+		$( "#select-periode" ).on( "change", function() {
+            $("#form-periode").submit()
+        });
 
+        var numb = 1;
+        $(".table-number").each(function() {
+          $(this).text(numb);
+          numb++;
+        });
+    </script>
+{% endblock %}
 {%  block content %}
 <div class="panel panel-default">
 		  <div class="panel-heading">
 		  	  <div class="form-group">
-		    <label for="exampleFormControlSelect1">Jadwal Tenaga Kebidanan</label>
-		    <select  id="exampleFormControlSelect1">
-		      <option>Januari 2017</option>
-		      <option>Desember 2016</option>
-		      <option>November 2016</option>
-		    </select>
+		    <label for="select-periode">Jadwal Tenaga Kebidanan</label>
+				  <form action="/" id="form-periode" class="form form-horizontal" method="post">
+					  <select  name="select-periode" id="select-periode">
+						{% for pr in periode %}
+							<option value="{{pr['id']}}">{{pr['periode']}}</option>
+						{% endfor %}
+					  </select>
+				  </form>
 		  </div>
-		  <button id="ubah-rest-pattern" class="btn btn-success"> <i class="fa fa-download" aria-hidden="true"></i>  Download Jadwal</button>
+		  <!--<button id="ubah-rest-pattern" class="btn btn-success"> <i class="fa fa-download" aria-hidden="true"></i>  Download Jadwal</button>-->
 		  </div>
 		  <div class="panel-body">
-			    <table class="table table-bordered table-responsive">
-			    <thead>
-			      <tr>
-			        <th>No</th>
-			        <th>Nama</th>
-			        <th>Nip</th>
-			        <th>1</th>
-			        <th>2</th>
-			        <th>3</th>
-			        <th>4</th>
-			        <th>5</th>
-			        <th>6</th>
-			        <th>7</th>
-			        <th>8</th>
-			        <th>9</th>
-			        <th>10</th>
-			        <th>11</th>
-			        <th>12</th>
-			        <th>13</th>
-			        <th>14</th>
-			        <th>15</th>
-			        <th>16</th>
-			        <th>17</th>
-			        <th>18</th>
-			        <th>19</th>
-			        <th>20</th>
-			        <th>21</th>
-			        <th>22</th>
-			        <th>23</th>
-			        <th>24</th>
-			        <th>25</th>
-			        <th>26</th>
-			        <th>27</th>
-			        <th>28</th>
-			      </tr>
-			    </thead>
-			    <tbody>
-			      <tr>
-			        <td>1</td>
-			        <td>Fitri Salim</td>
-			        <td>123456789</td>
-			        <td>P</td>
-			        <td>P</td>
-			        <td>P</td>
-			        <td>P</td>
-			        <td>O</td>
-			        <td>S</td>
-			        <td>S</td>
-			        <td>O</td>
-			        <td>M</td>
-			        <td>O</td>
-			        <td>M</td>
-			        <td>M</td>
-			        <td>O</td>
-			        <td>O</td>
-			        <td>S</td>
-			        <td>P</td>
-			        <td>P</td>
-			        <td>M</td>
-			        <td>M</td>
-			        <td>O</td>
-			        <td>O</td>
-			        <td>P</td>
-			        <td>P</td>
-			        <td>P</td>
-			        <td>S</td>
-			        <td>S</td>
-			        <td>O</td>
-			        <td>O</td>
-			      </tr>
-			      <tr>
-			        <td>2</td>
-			        <td>Anugrah Rai</td>
-			        <td>87654321</td>
-			                <td>P</td>
-			        <td>P</td>
-			        <td>P</td>
-			        <td>P</td>
-			        <td>O</td>
-			        <td>S</td>
-			        <td>S</td>
-			        <td>O</td>
-			        <td>M</td>
-			        <td>O</td>
-			        <td>M</td>
-			        <td>M</td>
-			        <td>O</td>
-			        <td>O</td>
-			        <td>S</td>
-			        <td>P</td>
-			        <td>P</td>
-			        <td>M</td>
-			        <td>M</td>
-			        <td>O</td>
-			        <td>O</td>
-			        <td>P</td>
-			        <td>P</td>
-			        <td>P</td>
-			        <td>S</td>
-			        <td>S</td>
-			        <td>O</td>
-			        <td>O</td>
-			      </tr>
-			    </tbody>
-			  </table>
+
+                <table class="table table-bordered table-responsive">
+                  <thead>
+                    <tr>
+                      <th>No</th>
+                      <th>Nama</th>
+                      <th>Nip</th>
+                      {% for i in range(days) %}
+                        <th>{{loop.index}}</th>
+                      {% endfor %}
+
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="table-number">-</td>
+                      {% for table in table['kr'] %}
+                          <td>{{ table.name }} ({{table.officer}})</td>
+                          <td>{{ table.nip|default('<unknown>', True) }}</td>
+
+                          {{ shift_element(table,days) }}
+
+                      {% endfor %}
+
+                    </tr>
+
+                    <tr>
+                      <td><strong>TIM 1</strong></td>
+                    </tr>
+                    <tr>
+                      <td class="table-number">-</td>
+                      {% for table in table['kt1'] %}
+                          <td>{{ table.name }} ({{table.officer}})</td>
+                          <td>{{ table.nip|default('<unknown>', True) }}</td>
+
+                          {{ shift_element(table,days) }}
+
+                      {% endfor %}
+
+                    </tr>
+
+                    {% for table in table['tim1'] %}
+                      <tr>
+                          <td class="table-number">-</td>
+                          <td>{{ table.name }} ({{table.officer}})</td>
+                          <td>{{ table.nip|default('<unknown>', True) }}</td>
+
+                          {{ shift_element(table,days) }}
+
+                      </tr>
+                    {% endfor %}
+
+                    <tr>
+                      <td><strong>TIM 2</strong></td>
+                    </tr>
+                    <tr>
+                      <td class="table-number">-</td>
+                      {% for table in table['kt2'] %}
+                          <td>{{ table.name }} ({{table.officer}})</td>
+                          <td>{{ table.nip|default('<unknown>', True) }}</td>
+
+                          {{ shift_element(table,days) }}
+
+                      {% endfor %}
+
+                    </tr>
+
+
+                    {% for table in table['tim2'] %}
+                      <tr>
+                          <td class="table-number">-</td>
+                          <td>{{ table.name }} ({{table.officer}})</td>
+                          <td>{{ table.nip|default('<unknown>', True) }}</td>
+
+                          {{ shift_element(table,days) }}
+
+                      </tr>
+                    {% endfor %}
+
+                  </tbody>
+                </table>
 		  </div>
 		</div>
 {% endblock %}
