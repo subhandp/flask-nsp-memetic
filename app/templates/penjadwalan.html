@@ -120,7 +120,8 @@
                 var n = 0;
                 $("#name-rest").text(data.res_data[0].name);
                 $("#nip-rest").text(data.res_data[0].nip);
-                $("[name='rest-shift-edit']").val(data.res_data[0].schedule_id);
+                $("[name='rest_schedule_id']").val(data.res_data[0].schedule_id);
+                $("[name='bidan-name']").val(data.res_data[0].name);
                 $(".rest-table").each(function() {
                   $(this).val('-');
                 });
@@ -163,7 +164,7 @@
            <div class="form-inline">
                  <input value="{{ periode.id }}" type="hidden" name="periode-id">
                  <button id="generate-rest-jadwal" class="btn btn-primary"> <i class="fa fa-refresh" aria-hidden="true"></i>  GENERATE REST JADWAL</button>
-                 <button id="generate-jadwal" class="btn btn-success" xdata-toggle="modal" xdata-target="#modal-proses"> <i class="fa fa-table" aria-hidden="true"></i>  Buat Jadwal</button>
+                 <button id="generate-jadwal" class="btn btn-success" xdata-toggle="modal" xdata-target="#modal-proses"> <i class="fa fa-table" aria-hidden="true"></i>  Generate Jadwal</button>
                  <button id="stop-generate-jadwal" class="btn btn-danger"> <i class="fa fa-table" aria-hidden="true"></i>  Stop Jadwal</button>
            </div>
 
@@ -275,7 +276,7 @@
               {% else %}
                 <div class="form-inline">
                       <input type="text" class="form-control date-picker"  placeholder="Tanggal Absen" readonly>
-                      <button id="generate-rest-pattern" class="btn btn-primary"> <i class="fa fa-refresh" aria-hidden="true"></i>  Generate Pattern Schedule</button>
+                      <button id="generate-rest-pattern" class="btn btn-primary"> <i class="fa fa-click" aria-hidden="true"></i>  Proses penjadwalan</button>
                  </div>
               {% endif %}
 
@@ -300,7 +301,8 @@
       <div class="modal-body">
 
         <form action="" id="form-edit-rest" class="form" method="post">
-            <input type="hidden" name="rest-shift-edit">
+            <input type="hidden" name="rest_schedule_id">
+            <input type="hidden" name="bidan-name">
         <table class="table table-bordered table-responsive">
           <thead>
                   <tr>

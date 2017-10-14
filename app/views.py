@@ -175,7 +175,25 @@ def penjadwalan_proses(slug):
                         print e
                         return json.dumps({'status': 'ERROR', 'res_data': e})
             elif request.form:
-                print request.form.getlist("rest-shift")
+                if 'rest_schedule_id' in request.form:
+                    rest_schedule_id = int(request.form["rest_schedule_id"])
+                    bidan_name = str(request.form["bidan-name"]).upper()
+                    rest_shift = request.form.getlist("rest-shift")
+                    rest = []
+                    for shift in rest_shift:
+                        if shift != '-':
+                            rest.append(shift)
+
+                    if len(rest) > 0:
+                        rest_str = ','.join(str(i) for i in rest)
+                    else:
+                        rest_str = 'CLEAR'
+
+                    rest_db = Schedules.query.filter(Schedules.id == rest_schedule_id).first()
+                    rest_db.rest_shift = rest_str
+                    db.session.commit()
+                    flash('%s, rest jadwal berhasil diubah.' % bidan_name, 'success')
+
 
     table = {"kr": shift_list(table_query.filter(Bidan.officer == "KR").all()),
              "kt1": shift_list(table_query.filter((Bidan.officer == "KT") & (Bidan.tim == "tim1")).all()),
