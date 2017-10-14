@@ -90,7 +90,7 @@ class Bidan(db.Model):
     nip = db.Column(db.String(20))
     officer = db.Column(db.String(20), nullable=False)
     tim = db.Column(db.String(10), nullable=False)
-    schedules = db.relationship("Schedules", cascade="all", backref="bidan")
+    schedules = db.relationship("Schedules", backref="bidan")
 
     def __repr__(self):
         return '<Bidan %s>' % self.name
