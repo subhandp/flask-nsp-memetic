@@ -660,73 +660,89 @@ class Memetic():
 
 def generate_pattern_schedule(periode_date):
     periode_db = Periode.query.filter(Periode.periode == periode_date).first()
-    last_periode = Periode.query.order_by(Periode.periode.desc()).filter(Periode.periode != periode_db.periode).first()
-    bidan_schedule = Bidan.query \
-        .outerjoin(Schedules) \
-        .add_columns(Schedules.shift, Schedules.rest_shift, Bidan.officer, Bidan.id) \
-        .filter(Schedules.periode_id == last_periode.id).all()
+    last_periode = Periode.query.order_by(Periode.periode.desc()).filter(Periode.periode < periode_db.periode).first()
+    if last_periode:
+        bidan_schedule = Bidan.query \
+            .outerjoin(Schedules) \
+            .add_columns(Schedules.shift, Schedules.rest_shift, Bidan.officer, Bidan.id) \
+            .filter(Schedules.periode_id == last_periode.id).all()
 
-    bidan_shift = {}
-    for sch in bidan_schedule:
-        if sch.shift:
-            bidan_shift[sch.id] = sch.shift.split(",")
-        else:
-            bidan_shift[sch.id] = None
+        bidan_shift = {}
+        for sch in bidan_schedule:
+            if sch.shift:
+                bidan_shift[sch.id] = sch.shift.split(",")
+            else:
+                bidan_shift[sch.id] = None
+        # print(json.dumps(last_periode.id, indent=4, sort_keys=False))
+        for id, shift in bidan_shift.items():
+            if not shift:
+                temp = "CLEAR"
+            else:
+                index = len(shift) - 1
+                if shift[index] == "P":
+                    back = 0
+                    pg = 0
+                    start = True
+                    while start:
+                        if index >= back:
+                            if shift[index - back] == "P":
+                                pg += 1
+                                back += 1
+                            else:
+                                start = False
+                        else:
+                            start = False
 
-    for id, shift in bidan_shift.items():
-        index = len(shift) - 1
-        if not shift:
-            temp = "CLEAR"
-        else:
-            if shift[index] == "P":
-                back = 0
-                pg = 0
-                start = True
-                while start:
-                    if shift[index - back] == "P":
-                        pg += 1
-                        back += 1
-                    else:
-                        start = False
-
-                if Bidan.query.get(id).officer == "KT" or Bidan.query.get(id).officer == "KR":
-                    pola_pagi = 6
-                    pola_pagi = pola_pagi - pg
-                    rest = ["P" for i in range(pola_pagi)]
-                    rest.append("O")
-                    temp_static = ",".join(rest)
-                else:
-                    pola_pagi = 3
-                    pola_pagi = pola_pagi - pg
-                    if pola_pagi > 0:
+                    if Bidan.query.get(id).officer == "KT" or Bidan.query.get(id).officer == "KR":
+                        pola_pagi = 6
+                        pola_pagi = pola_pagi - pg
                         rest = ["P" for i in range(pola_pagi)]
-                        temp = ",".join(rest)
+                        rest.append("O")
+                        temp_static = ",".join(rest)
+                    else:
+                        pola_pagi = 3
+                        pola_pagi = pola_pagi - pg
+                        if pola_pagi > 0:
+                            rest = ["P" for i in range(pola_pagi)]
+                            temp = ",".join(rest)
+                        else:
+                            temp = "CLEAR"
+
+                elif shift[index] == "S":
+                    if index >= 1:
+                        if shift[index - 1] == "S":
+                            temp = "O"
+                        else:
+                            temp = "S,O"
+                    else:
+                        temp = "S,O"
+                elif shift[index] == "M":
+                    if index >= 1:
+                        if shift[index - 1] == "M":
+                            temp = "O,O"
+                        else:
+                            temp = "M,O,O"
+                    else:
+                        temp = "M,O,O"
+                elif shift[index] == "O":
+                    if index >= 1 and index >= 2:
+                        if shift[index - 1] == "M" and shift[index - 2] == "M":
+                            temp = "O"
+                        else:
+                            temp = "CLEAR"
                     else:
                         temp = "CLEAR"
 
-            elif shift[index] == "S":
-                if shift[index - 1] == "S":
-                    temp = "O"
+                if Bidan.query.get(id).officer == "KT" or Bidan.query.get(id).officer == "KR":
+                    Schedules.query \
+                        .filter((Schedules.periode_id == periode_db.id) & (Schedules.bidan_id == id)) \
+                        .update({Schedules.rest_shift: temp_static})
                 else:
-                    temp = "S,O"
-            elif shift[index] == "M":
-                if shift[index - 1] == "M":
-                    temp = "O,O"
-                else:
-                    temp = "M,O,O"
-            elif shift[index] == "O":
-                if shift[index - 1] == "M" and shift[index - 2] == "M":
-                    temp = "O"
-                else:
-                    temp = "CLEAR"
+                    Schedules.query \
+                        .filter((Schedules.periode_id == periode_db.id) & (Schedules.bidan_id == id)) \
+                        .update({Schedules.rest_shift: temp})
 
-            if Bidan.query.get(id).officer == "KT" or Bidan.query.get(id).officer == "KR":
-                Schedules.query \
-                    .filter((Schedules.periode_id == periode_db.id) & (Schedules.bidan_id == id)) \
-                    .update({Schedules.rest_shift: temp_static})
-            else:
-                Schedules.query \
-                    .filter((Schedules.periode_id == periode_db.id) & (Schedules.bidan_id == id)) \
-                    .update({Schedules.rest_shift: temp})
-
-            db.session.commit()
+                db.session.commit()
+        return True
+    else:
+        return False

@@ -110,71 +110,72 @@ def penjadwalan():
 
 @app.route("/penjadwalan/<slug>/", methods=['GET', 'POST'])
 def penjadwalan_proses(slug):
-    try:
-        days = 0
-        slug_date = slug.split("-")
-        periode_date = datetime.date(int(slug_date[1]), int(slug_date[0]), 1)
-        table_query = Bidan.query \
-            .join(Schedules) \
-            .join(Periode) \
-            .add_columns(Bidan.id, Bidan.name, Bidan.officer, Bidan.tim, Bidan.nip, Schedules.shift,
-                         Schedules.rest_shift, Schedules.id.label("schedule_id")) \
-            .filter(Periode.periode == periode_date)
-        if periode_date:
-            days = calendar.monthrange(periode_date.year, periode_date.month)[1]
-            periode_db = Periode.query.filter(Periode.periode == periode_date).first()
-            if not periode_db:
-                create_schedule_db(periode_date)
-                generate_pattern_schedule(periode_date)
-            else:
-                sch = Schedules.query.filter(Schedules.periode_id == periode_db.id).first()
-                if not sch.rest_shift or sch.rest_shift == "":
-                    generate_pattern_schedule(periode_date)
+    days = 0
+    slug_date = slug.split("-")
+    periode_date = datetime.date(int(slug_date[1]), int(slug_date[0]), 1)
+    table_query = Bidan.query \
+        .join(Schedules) \
+        .join(Periode) \
+        .add_columns(Bidan.id, Bidan.name, Bidan.officer, Bidan.tim, Bidan.nip, Schedules.shift,
+                     Schedules.rest_shift, Schedules.id.label("schedule_id")) \
+        .filter(Periode.periode == periode_date)
+    if periode_date:
+        days = calendar.monthrange(periode_date.year, periode_date.month)[1]
+        periode_db = Periode.query.filter(Periode.periode == periode_date).first()
+        if not periode_db:
+            create_schedule_db(periode_date)
 
-            if request.method == 'POST':
-                if request.json:
-                    if request.json['ajax'] == 'generate-jadwal':
-                        with open("scheduling_process.txt", "wb") as fo:
-                            fo.write("true")
+        if request.method == 'POST':
+            if request.json:
+                if request.json['ajax'] == 'generate-jadwal':
+                    with open("scheduling_process.txt", "wb") as fo:
+                        fo.write("true")
 
-                        min_bidan = schedulling_setting('get', 'min_bidan')
-                        setting_algoritma = schedulling_setting('get', 'memetika')
-                        init_data = min_bidan.copy()
-                        init_data.update(setting_algoritma)
-                        init_data["days"] = days
-                        init_data["periode_id"] = periode_db.id
+                    min_bidan = schedulling_setting('get', 'min_bidan')
+                    setting_algoritma = schedulling_setting('get', 'memetika')
+                    init_data = min_bidan.copy()
+                    init_data.update(setting_algoritma)
+                    init_data["days"] = days
+                    init_data["periode_id"] = periode_db.id
 
-                        meme = Memetic(init_data)
-                        meme.initial_populasi()
-                        for generasi in range(meme.generasi):
-                            meme.fitness()
-                            meme.selection()
-                            meme.recombination()
-                            meme.mutation()
-                            meme.local_search()
-                            meme.population_replacement()
-                            if meme.termination(generasi):
-                                with open("scheduling_process.txt", "wb") as fo:
-                                    fo.write("false")
-                                break
+                    meme = Memetic(init_data)
+                    meme.initial_populasi()
+                    for generasi in range(meme.generasi):
+                        meme.fitness()
+                        meme.selection()
+                        meme.recombination()
+                        meme.mutation()
+                        meme.local_search()
+                        meme.population_replacement()
+                        if meme.termination(generasi):
+                            with open("scheduling_process.txt", "wb") as fo:
+                                fo.write("false")
+                            break
 
-                        meme.detail_solusi()
-                        return json.dumps({'status': 'OK'});
-                    elif request.json['ajax'] == 'stop-generate-jadwal':
-                        with open("scheduling_process.txt", "wb") as fo:
-                            fo.write("false")
-                    elif request.json['ajax'] == 'get-rest-shift':
-                        try:
-                            rest_req = shift_list(table_query.filter(Schedules.id == request.json['schedule_id']).all())
-                            return json.dumps({'status': 'OK', 'days': days, 'res_data': rest_req})
-                        except Exception as e:
-                            return json.dumps({'status': 'ERROR', 'res_data': e})
-                elif request.form:
-                    print request.form.getlist("rest-shift")
-
-    except Exception as e:
-        print e
-        abort(404)
+                    meme.detail_solusi()
+                    return json.dumps({'status': 'OK'});
+                elif request.json['ajax'] == 'stop-generate-jadwal':
+                    with open("scheduling_process.txt", "wb") as fo:
+                        fo.write("false")
+                elif request.json['ajax'] == 'get-rest-shift':
+                    try:
+                        rest_req = shift_list(table_query.filter(Schedules.id == request.json['schedule_id']).all())
+                        return json.dumps({'status': 'OK', 'days': days, 'res_data': rest_req})
+                    except Exception as e:
+                        return json.dumps({'status': 'ERROR', 'res_data': e})
+                elif request.json['ajax'] == 'generate-rest-jadwal':
+                    try:
+                        result = generate_pattern_schedule(periode_date)
+                        if result:
+                            flash('Rest jadwal berhasil digenerate.', 'success')
+                        else:
+                            flash('Rest jadwal gagal digenerate, acuan jadwal tidak ditemukan.', 'danger')
+                        return json.dumps({'status': 'OK'})
+                    except Exception as e:
+                        print e
+                        return json.dumps({'status': 'ERROR', 'res_data': e})
+            elif request.form:
+                print request.form.getlist("rest-shift")
 
     table = {"kr": shift_list(table_query.filter(Bidan.officer == "KR").all()),
              "kt1": shift_list(table_query.filter((Bidan.officer == "KT") & (Bidan.tim == "tim1")).all()),

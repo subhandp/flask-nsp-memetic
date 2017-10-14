@@ -75,7 +75,7 @@ class Schedules(db.Model):
     officer = db.Column(db.String(20), nullable=False)
     tim = db.Column(db.String(10), nullable=False)
     shift = db.Column(db.Text, default="", nullable=True)
-    rest_shift = db.Column(db.Text, default="", nullable=True)
+    rest_shift = db.Column(db.Text, default="CLEAR", nullable=True)
 
     def __repr__(self):
         return '<Schedules %s>' % self.periode
