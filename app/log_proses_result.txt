@@ -1,0 +1,11 @@
+PERIODE: 12-2017
+TOTAL HARI: 31
+WAKTU EKSEKUSI: 0:00:10.984220
+TERMINASI: Stopped from client
+GENERASI: 7
+FITNESS: 0.062500
+TOTAL PELANGGARAN: 7
+DETAIL: 
+---min_bidan: 7
+---pairshift: 0
+---day_off: 0

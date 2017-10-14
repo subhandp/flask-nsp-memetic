@@ -68,7 +68,7 @@ class Periode(db.Model):
 class Schedules(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     periode_id = db.Column(db.Integer, db.ForeignKey("periode.id"), nullable=False)
-    bidan_id = db.Column(db.Integer, db.ForeignKey("bidan.id"), nullable=False)
+    bidan_id = db.Column(db.Integer, db.ForeignKey("bidan.id", ondelete='SET NULL'), nullable=True)
     #bidan = db.relationship("Bidan", cascade="all", backref="Schedules")
     name = db.Column(db.String(50), nullable=False)
     nip = db.Column(db.String(20), nullable=True)

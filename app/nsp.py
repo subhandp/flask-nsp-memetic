@@ -1,6 +1,8 @@
 from app import db
 from models import Schedules, Bidan, Periode
 import random, operator, json
+import timeit
+from datetime import datetime
 
 class Memetic():
     individu_static = {}
@@ -10,11 +12,14 @@ class Memetic():
     lingkungan_individu_fitness = []
     lingkungan_individu_fitness_interval = []
     elit_individu = {"fitness": 0, "individu": None, "total_elit": 2}
+    temp_total_pelanggaran = {"min_bidan": 0, "day_off": 0, "pairshift": 0}
     shift = [['P'], ['S'], ['M']]
     hard_penalti = 5
     soft_penalti = 1
 
     def __init__(self, init_data):
+        #self.start_time = timeit.default_timer()
+        self.start_time = datetime.now()
         self.min_jenis_shift = {
             "shift_pagi": {"sn": int(init_data["shift_pagi_sn"]), "jr": int(init_data["shift_pagi_jr"])},
             "shift_siang": {"sn": int(init_data["shift_siang_sn"]), "jr": int(init_data["shift_siang_jr"])},
@@ -500,10 +505,15 @@ class Memetic():
 
 
     def single_fitness(self, individu, debug=False):
+
+        self.temp_total_pelanggaran["min_bidan"] = self.min_bidan(individu, "fitness")
+        self.temp_total_pelanggaran["day_off"] = self.day_off(individu, "fitness")
+        self.temp_total_pelanggaran["pairshift"] = self.pairshift_overflow(individu)
+
         fitness = 0
-        fitness += self.min_bidan(individu, "fitness", debug) * self.hard_penalti
-        fitness += self.day_off(individu, "fitness", debug) * self.hard_penalti
-        fitness += self.pairshift_overflow(individu, debug) * self.soft_penalti
+        fitness += self.temp_total_pelanggaran["min_bidan"] * self.hard_penalti
+        fitness += self.temp_total_pelanggaran["day_off"] * self.hard_penalti
+        fitness += self.temp_total_pelanggaran["pairshift"] * self.soft_penalti
         normalisasi_fitness = float(1) / (fitness+1)
         return normalisasi_fitness
 
@@ -641,21 +651,60 @@ class Memetic():
 
         f = open('scheduling_process.txt', 'r')
         scheduling_process = f.read()
-
+        msg = ""
         if scheduling_process == "false":
             print "PROSESS STOPED FROM CLIENT"
-            return True
-        if min_fitness == max_fitness:
+            msg = "Stopped from client"
+        elif min_fitness == max_fitness:
             print "TERMINASI TERPENUHI - KONVERGENSI FITNESS"
-            return True
+            msg = "Konvergensi fitness"
+            with open("scheduling_process.txt", "wb") as fo:
+                fo.write("false")
         elif self.elit_individu["fitness"] == 1:
             print "TERMINASI TERPENUHI - TIDAK ADA PELANGGARAN"
-            return True
+            msg = "Fitness sempurna"
+        elif generasi < self.generasi-1:
+            return {"stop": False}
+        elif generasi == self.generasi-1:
+            print "TERMINASI TERPENUHI - MAKSIMAL GENERASI TERCAPAI"
+            msg = "Maksimal generasi tercapai"
+            with open("scheduling_process.txt", "wb") as fo:
+                fo.write("false")
         elif generasi > self.generasi-3:
             unik = set(self.lingkungan_individu_fitness)
             unik_value = len(unik)
             print "UNIK FITNESS: %d" % (unik_value)
-            return False
+            return {"stop": False}
+
+        result_individu = {}
+        full_individu = dict(self.individu_static.items() + self.elit_individu["individu"].items())
+        for id, myindividu in full_individu.items():
+            rest_shift = self.bidan_w_schedule[id]["rest_shift"]
+            result_individu[id] = []
+            if rest_shift != "CLEAR":
+                for shift in rest_shift:
+                    result_individu[id].append(shift)
+            else:
+                rest_shift = []
+
+            current_sch = self.hari - len(rest_shift)
+            for i in range(current_sch):
+                result_individu[id].append(full_individu[id][i])
+
+        # elapsed = timeit.default_timer() - self.start_time
+        end_time = datetime.now()
+        elapsed = str(format(end_time - self.start_time))
+
+        self.single_fitness(self.elit_individu["individu"])
+        totalp = 0
+        for key, total in self.temp_total_pelanggaran.items():
+            totalp += total
+
+
+        data = {"individu": result_individu, "msg": msg, "generasi": generasi, "elit_fitness": self.elit_individu["fitness"],
+                "pelanggaran": self.temp_total_pelanggaran, "total_pelanggaran": totalp, "execution_time": elapsed}
+
+        return {"stop": True, "data": data}
 
 
 def generate_pattern_schedule(periode_date):

@@ -1,6 +1,0 @@
-f = open('scheduling_process.txt', 'r')  # From wherever they upload it to.
-                    read = f.read()
-
-
-with open("scheduling_process.txt", "wb") as fo:
-                        #     fo.write("false")

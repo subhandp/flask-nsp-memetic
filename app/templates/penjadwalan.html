@@ -56,7 +56,6 @@
                 type: 'POST',
                 data: JSON.stringify({
                   ajax: 'generate-rest-jadwal',
-                  periode_id: id
                 }),
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json',
@@ -70,13 +69,34 @@
 
 
         $( "#generate-jadwal" ).on( "click", function() {
+            $(this).button('loading');
             var id = $("[name='periode-id']").val();
+            $("#proses-algoritma-modal").modal({backdrop: 'static', keyboard: false});
             var request = $.ajax({
                 url: window.location.pathname,
                 type: 'POST',
                 data: JSON.stringify({
                   ajax: 'generate-jadwal',
-                  periode_id: id
+                }),
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+            });
+
+            request.done(function(data){
+                window.location.reload(true);
+            })
+
+        });
+
+         $( "#stop-generate-jadwal" ).on( "click", function() {
+            var id = $("[name='periode-id']").val();
+            $(this).button('loading');
+            $(".wait-proses").hide()
+            var request = $.ajax({
+                url: window.location.pathname,
+                type: 'POST',
+                data: JSON.stringify({
+                  ajax: 'stop-generate-jadwal',
                 }),
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json',
@@ -86,20 +106,24 @@
 
 
 
-         $( "#stop-generate-jadwal" ).on( "click", function() {
-            var id = $("[name='periode-id']").val();
-            var request = $.ajax({
-                url: window.location.pathname,
-                type: 'POST',
-                data: JSON.stringify({
-                  ajax: 'stop-generate-jadwal',
-                  periode_id: id
-                }),
-                contentType: 'application/json; charset=utf-8',
-                dataType: 'json',
-            });
-
-
+         $( "#clears-schedule" ).on( "click", function() {
+            var r = confirm("Bersihkan jadwal ?");
+            if (r == true) {
+                var id = $("[name='periode-id']").val();
+                $(this).button('loading');
+                var request = $.ajax({
+                    url: window.location.pathname,
+                    type: 'POST',
+                    data: JSON.stringify({
+                      ajax: 'clears-schedule',
+                    }),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                });
+                request.done(function(data){
+                    window.location.reload(true);
+                })
+            }
         });
 
 
@@ -165,9 +189,9 @@
                  <input value="{{ periode.id }}" type="hidden" name="periode-id">
                  <button id="generate-rest-jadwal" class="btn btn-primary"> <i class="fa fa-refresh" aria-hidden="true"></i>  GENERATE REST JADWAL</button>
                  <button id="generate-jadwal" class="btn btn-success" xdata-toggle="modal" xdata-target="#modal-proses"> <i class="fa fa-table" aria-hidden="true"></i>  Generate Jadwal</button>
-                 <button id="stop-generate-jadwal" class="btn btn-danger"> <i class="fa fa-table" aria-hidden="true"></i>  Stop Jadwal</button>
+                 <button id="clears-schedule" class="pull-right btn btn-danger" > <i class="fa fa-trash" aria-hidden="true"></i>  Clears schedule</button>
+                 <button id="get-log" class="pull-right btn btn-default" data-toggle="modal" data-target="#log-algoritma-modal"> <i class="fa fa-log" aria-hidden="true"></i>  Proses log</button>
            </div>
-
       </div>
     {% endif %}
       <div class="panel-body">
@@ -364,6 +388,42 @@
         <button type="submit" id="save-edit-rest" class="btn btn-success" > <i class="fa fa-save"></i> Simpan</button>
       </div>
         </form>
+    </div>
+  </div>
+</div>
+
+<div id="proses-algoritma-modal" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-lg">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">PROSES ALGORITMA</h4>
+      </div>
+      <div class="modal-body">
+            <center><i style="color:#008cba" class="fa fa-spinner fa-pulse fa-5x fa-fw wait-proses"></i></center>
+            <center><span class="sr-only">Loading...</span></center>
+          <br>
+            <center><button id="stop-generate-jadwal" class="btn-danger"> <i class="fa fa-stop" aria-hidden="true"></i>  Stop proses</button></center>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="log-algoritma-modal" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-lg">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">LOG PROSES PENJADWALAN</h4>
+      </div>
+      <div class="modal-body modal-body-log">
+            {% for log in scheduling_process %}
+                <p>{{log}}</p>
+            {% endfor %}
+      </div>
     </div>
   </div>
 </div>

@@ -69,6 +69,28 @@ def schedulling_setting(action='get', data = None):
             config.write(configfile)
 
 
+def log_n_save_proses_result(data, slug, days, periode_id):
+    APPLICATION_DIR = os.path.dirname(os.path.realpath(__file__))
+    path_config = '%s/log_proses_result.txt' % APPLICATION_DIR
+    with open(path_config, "wb") as fo:
+        fo.write("PERIODE: %s\n" % slug)
+        fo.write("TOTAL HARI: %d\n" % days)
+        fo.write("WAKTU EKSEKUSI: %s\n" % data["execution_time"])
+        fo.write("TERMINASI: %s\n" % data["msg"])
+        fo.write("GENERASI: %d\n" % data["generasi"])
+        fo.write("FITNESS: %f\n" % data["elit_fitness"])
+        fo.write("TOTAL PELANGGARAN: %d\n" % data["total_pelanggaran"])
+        fo.write("DETAIL: \n")
+        for jenis, total in data["pelanggaran"].items():
+            wrt = "---%s: %d\n" % (jenis, total)
+            fo.write(wrt)
+
+    sch_query = Schedules.query.filter(Schedules.periode_id == periode_id)
+    for id, shift_individu in data["individu"].items():
+        bidan_shift = sch_query.filter(Schedules.bidan_id == id).first()
+        bidan_shift.shift = ",".join(shift_individu)
+        db.session.commit()
+
 @app.route("/", methods=['GET', 'POST'])
 def homepage():
 
@@ -110,6 +132,12 @@ def penjadwalan():
 
 @app.route("/penjadwalan/<slug>/", methods=['GET', 'POST'])
 def penjadwalan_proses(slug):
+    APPLICATION_DIR = os.path.dirname(os.path.realpath(__file__))
+    path_config = '%s/log_proses_result.txt' % APPLICATION_DIR
+    logs = [line.rstrip('\n') for line in open(path_config)]
+
+    with open("scheduling_process.txt", "wb") as fo:
+        fo.write("false")
     days = 0
     slug_date = slug.split("-")
     periode_date = datetime.date(int(slug_date[1]), int(slug_date[0]), 1)
@@ -130,7 +158,6 @@ def penjadwalan_proses(slug):
                 if request.json['ajax'] == 'generate-jadwal':
                     with open("scheduling_process.txt", "wb") as fo:
                         fo.write("true")
-
                     min_bidan = schedulling_setting('get', 'min_bidan')
                     setting_algoritma = schedulling_setting('get', 'memetika')
                     init_data = min_bidan.copy()
@@ -147,33 +174,33 @@ def penjadwalan_proses(slug):
                         meme.mutation()
                         meme.local_search()
                         meme.population_replacement()
-                        if meme.termination(generasi):
-                            with open("scheduling_process.txt", "wb") as fo:
-                                fo.write("false")
+                        terminasi = meme.termination(generasi)
+                        if terminasi["stop"]:
+                            log_n_save_proses_result(terminasi["data"], slug, days, periode_db.id)
                             break
-
                     meme.detail_solusi()
-                    return json.dumps({'status': 'OK'});
+                    return json.dumps({'status': 'OK'})
                 elif request.json['ajax'] == 'stop-generate-jadwal':
                     with open("scheduling_process.txt", "wb") as fo:
                         fo.write("false")
                 elif request.json['ajax'] == 'get-rest-shift':
-                    try:
-                        rest_req = shift_list(table_query.filter(Schedules.id == request.json['schedule_id']).all())
-                        return json.dumps({'status': 'OK', 'days': days, 'res_data': rest_req})
-                    except Exception as e:
-                        return json.dumps({'status': 'ERROR', 'res_data': e})
+                    rest_req = shift_list(table_query.filter(Schedules.id == request.json['schedule_id']).all())
+                    return json.dumps({'status': 'OK', 'days': days, 'res_data': rest_req})
                 elif request.json['ajax'] == 'generate-rest-jadwal':
-                    try:
-                        result = generate_pattern_schedule(periode_date)
-                        if result:
-                            flash('Rest jadwal berhasil digenerate.', 'success')
-                        else:
-                            flash('Rest jadwal gagal digenerate, acuan jadwal tidak ditemukan.', 'danger')
-                        return json.dumps({'status': 'OK'})
-                    except Exception as e:
-                        print e
-                        return json.dumps({'status': 'ERROR', 'res_data': e})
+                    result = generate_pattern_schedule(periode_date)
+                    if result:
+                        flash('Rest jadwal berhasil digenerate.', 'success')
+                    else:
+                        flash('Rest jadwal gagal digenerate, acuan jadwal tidak ditemukan.', 'danger')
+                    return json.dumps({'status': 'OK'})
+                elif request.json['ajax'] == 'clears-schedule':
+                    current_schedule = Schedules.query.filter(Schedules.periode_id == periode_db.id).all()
+                    for sch in current_schedule:
+                        sch.shift = ""
+                        sch.rest_shift = "CLEAR"
+                    db.session.commit()
+                    flash('Jadwal berhasil dibersihkan.', 'success')
+                    return json.dumps({'status': 'OK'})
             elif request.form:
                 if 'rest_schedule_id' in request.form:
                     rest_schedule_id = int(request.form["rest_schedule_id"])
@@ -201,7 +228,7 @@ def penjadwalan_proses(slug):
              "tim1": shift_list(table_query.filter((Bidan.tim == "tim1") & (Bidan.officer != "KT")).order_by(Bidan.id.asc()).all()),
              "tim2": shift_list(table_query.filter((Bidan.tim == "tim2") & (Bidan.officer != "KT")).order_by(Bidan.id.asc()).all())}
 
-    return render_template('penjadwalan.html', table=table, periode=periode_db, days=days)
+    return render_template('penjadwalan.html', table=table, periode=periode_db, days=days, scheduling_process=logs)
 
 
 @app.route("/setting/", methods=['GET', 'POST'])

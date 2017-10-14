@@ -10,6 +10,11 @@
             $("#form-periode").submit()
         });
 
+        $( "#cetak-jadwal" ).on( "click", function() {
+            window.print();
+        });
+
+
         var numb = 1;
         $(".table-number").each(function() {
           $(this).text(numb);
@@ -22,13 +27,15 @@
 		  <div class="panel-heading">
 		  	  <div class="form-group">
 		    <label for="select-periode">Jadwal Tenaga Kebidanan</label>
-				  <form action="/" id="form-periode" class="form form-horizontal" method="post">
+				  <form action="/" id="form-periode" class="form form-inline" method="post">
 					  <select  name="select-periode" id="select-periode">
 						{% for pr in periode %}
 							<option value="{{pr['id']}}">{{pr['periode']}}</option>
 						{% endfor %}
 					  </select>
+                      <button id="cetak-jadwal" class="btn btn-default pull-right"> <i class="fa fa-print" aria-hidden="true"></i>  Cetak</button>
 				  </form>
+
 		  </div>
 		  <!--<button id="ubah-rest-pattern" class="btn btn-success"> <i class="fa fa-download" aria-hidden="true"></i>  Download Jadwal</button>-->
 		  </div>
