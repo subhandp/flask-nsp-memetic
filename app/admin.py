@@ -1,11 +1,44 @@
 from flask_admin import Admin
 from app import app, db
 from flask_admin.contrib.sqla import ModelView
-from models import Schedules, Bidan, Periode
-from wtforms.fields import SelectField
+from models import Schedules, Bidan, Periode, User
+from wtforms.fields import SelectField, PasswordField
+from flask_admin.menu import MenuLink
+from flask_admin import AdminIndexView, expose
+from flask import g, url_for, request, redirect
 
+class AdminAuthentication(object):
+    def is_accessible(self):
+        return g.user.is_authenticated
 
-class SchedulesModelView(ModelView):
+class BaseModelView(AdminAuthentication, ModelView):
+    pass
+
+class IndexView(AdminIndexView):
+    @expose('/')
+    def index(self):
+        if not (g.user.is_authenticated):
+            return redirect(url_for('login', next=request.path))
+        return self.render('admin/index.html')
+
+class UserModelView(BaseModelView):
+    column_filters = ['username']
+    column_list = ['username', 'created_timestamp']
+    column_searchable_list = ['username']
+
+    form_columns = ['username', 'password']
+    form_extra_fields = {
+        'password': PasswordField('New password')
+    }
+
+    def on_model_change(self, form, model, is_created):
+        if form.password.data:
+            model.password_hash = User.make_password(form.password.data)
+        return super(UserModelView, self).on_model_change(
+            form, model, is_created
+        )
+
+class SchedulesModelView(BaseModelView):
     column_searchable_list = ['name']
     column_filters = ['name', 'periode']
     column_list = ['name', 'nip', 'officer', 'tim', 'shift', 'rest_shift', 'periode']
@@ -33,12 +66,12 @@ class SchedulesModelView(ModelView):
         'officer': _officer_choices
     }
 
-class PeriodeModelView(ModelView):
+class PeriodeModelView(BaseModelView):
     column_searchable_list = ['periode']
     form_columns = ['periode']
 
 
-class BidanModelView(ModelView):
+class BidanModelView(BaseModelView):
 
     column_searchable_list = ['nip', 'name']
     column_list = ['name', 'nip', 'officer', 'tim']
@@ -71,7 +104,10 @@ class BidanModelView(ModelView):
 
 
 
-admin = Admin(app, 'Blog Admin')
+admin = Admin(app, 'Penjadwalan Administrator', index_view=IndexView())
 admin.add_view(BidanModelView(Bidan, db.session))
 admin.add_view(PeriodeModelView(Periode, db.session))
 admin.add_view(SchedulesModelView(Schedules, db.session))
+admin.add_view(UserModelView(User, db.session))
+admin.add_link(MenuLink(name='Dashboard', category='', url="/"))
+admin.add_link(MenuLink(name='Logout', category='', url="/logout/"))

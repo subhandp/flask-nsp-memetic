@@ -5,20 +5,20 @@ import timeit
 from datetime import datetime
 
 class Memetic():
-    individu_static = {}
-    bidan_w_schedule = {}
-    lingkungan_individu = []
-    temp_lingkungan_individu = []
-    lingkungan_individu_fitness = []
-    lingkungan_individu_fitness_interval = []
-    elit_individu = {"fitness": 0, "individu": None, "total_elit": 2}
-    temp_total_pelanggaran = {"min_bidan": 0, "day_off": 0, "pairshift": 0}
     shift = [['P'], ['S'], ['M']]
     hard_penalti = 5
     soft_penalti = 1
 
     def __init__(self, init_data):
         #self.start_time = timeit.default_timer()
+        self.individu_static = {}
+        self.bidan_w_schedule = {}
+        self.lingkungan_individu = []
+        self.temp_lingkungan_individu = []
+        self.lingkungan_individu_fitness = []
+        self.lingkungan_individu_fitness_interval = []
+        self.elit_individu = {"fitness": 0, "individu": None, "total_elit": 2}
+        self.temp_total_pelanggaran = {"min_bidan": 0, "day_off": 0, "pairshift": 0}
         self.start_time = datetime.now()
         self.min_jenis_shift = {
             "shift_pagi": {"sn": int(init_data["shift_pagi_sn"]), "jr": int(init_data["shift_pagi_jr"])},
@@ -238,20 +238,20 @@ class Memetic():
                     else:
                         cur_hari = None
                 else:
-                    cur_hari = None
+                    cur_hari = hari
 
-                if cur_hari:
+                if cur_hari is not None:
                     shift = individu[id][cur_hari]
                     if jenis_bidan == jenis:
                         if shift == shift_more1 and total_more1 > 0 and total_need > 0:
                             individu[id][cur_hari] = shift_need
-                            individu[id][cur_hari-1] = "P"
+                            #individu[id][cur_hari-1] = "P"
                             total_more1 -= 1
                             total_need -= 1
 
                         if shift == shift_more2 and total_more2 > 0 and total_need > 0:
                             individu[id][cur_hari] = shift_need
-                            individu[id][cur_hari-1] = "P"
+                            #individu[id][cur_hari-1] = "P"
                             total_more2 -= 1
                             total_need -= 1
                         #
@@ -286,7 +286,7 @@ class Memetic():
                         cur_hari = hari
                         shift = individu[id][cur_hari]
 
-                    if shift:
+                    if shift is not None:
                         if hari + 1 <= self.hari - 1:
                             nextshift = individu[id][cur_hari + 1]
                         else:

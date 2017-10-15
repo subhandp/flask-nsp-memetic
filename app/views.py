@@ -1,9 +1,10 @@
-from app import app, db
-from flask import render_template, request, abort , flash # , redirect, url_for, session, logging, request
+from app import app, db, LoginManager
+from flask import render_template, request, abort , flash, redirect, url_for, session, logging, request
 from models import Schedules, Bidan, Periode
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from nsp import generate_pattern_schedule, Memetic
-from form import MinBidanForm, ProsesAlgoForm
+from form import MinBidanForm, ProsesAlgoForm, LoginForm
+from flask_login import login_user, logout_user, login_required
 import datetime, json, calendar, os
 import ConfigParser
 
@@ -22,7 +23,6 @@ def create_schedule_db(periode_date):
     db.session.commit()
 
 def shift_list(obj):
-
     new_obj = []
     for result in obj:
         temp_obj = {}
@@ -47,8 +47,7 @@ def shift_list(obj):
         temp_obj["schedule_id"] = result.schedule_id
         new_obj.append(temp_obj)
 
-    #print(json.dumps(new_obj, indent=4, sort_keys=False))
-    return  new_obj
+    return new_obj
 
 
 def schedulling_setting(action='get', data = None):
@@ -93,7 +92,6 @@ def log_n_save_proses_result(data, slug, days, periode_id):
 
 @app.route("/", methods=['GET', 'POST'])
 def homepage():
-
     table_query = Schedules.query \
         .join(Periode) \
         .add_columns(Schedules.id.label("schedule_id"), Schedules.officer, Schedules.nip, Schedules.name, Schedules.shift, Schedules.rest_shift, Schedules.tim, Periode.id, Periode.periode)
@@ -126,11 +124,13 @@ def homepage():
 
 
 @app.route("/penjadwalan/", methods=['GET', 'POST'])
+@login_required
 def penjadwalan():
     return render_template('penjadwalan.html')
 
 
 @app.route("/penjadwalan/<slug>/", methods=['GET', 'POST'])
+@login_required
 def penjadwalan_proses(slug):
     APPLICATION_DIR = os.path.dirname(os.path.realpath(__file__))
     path_config = '%s/log_proses_result.txt' % APPLICATION_DIR
@@ -232,6 +232,7 @@ def penjadwalan_proses(slug):
 
 
 @app.route("/setting/", methods=['GET', 'POST'])
+@login_required
 def setting():
     min_bidan_data = schedulling_setting('get', 'min_bidan')
     proses_algo_data = schedulling_setting('get', 'memetika')
@@ -250,3 +251,23 @@ def setting():
                 flash('Proses algoritma berhasil diubah.', 'success')
 
     return render_template('setting.html', min_bidan_form=min_bidan_form, proses_algo_form=proses_algo_form)
+
+@app.route("/logout/")
+def logout():
+    logout_user()
+    flash("Anda berhasil logged out.", "success")
+    return redirect(request.args.get('next') or url_for('homepage'))
+
+@app.route("/login/", methods=["GET","POST"])
+def login():
+    if request.method == "POST":
+        form = LoginForm(request.form)
+        if form.validate():
+            # login_user helpers flask-login setting correct session
+            login_user(form.user, remember=form.remember_me.data)
+            flash("%s anda berhasil logged in." % form.user.username, "success")
+            return redirect(request.args.get("next") or url_for("homepage"))
+    else:
+        form = LoginForm()
+
+    return render_template("login.html", login_form=form)

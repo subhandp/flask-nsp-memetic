@@ -2,6 +2,13 @@ from models import *
 import datetime
 
 def first_data():
+
+    u = []
+    u.append(User.create("subhandp","12345"))
+    db.session.add_all(u)
+    db.session.commit()
+
+
     fp = []
     fp.append(Periode(periode=datetime.date(2017, 10, 1)))
     fp.append(Periode(periode=datetime.date(2017, 9, 1)))

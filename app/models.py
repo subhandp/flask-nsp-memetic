@@ -1,12 +1,15 @@
 import datetime, re
-from app import db
+from app import db, login_manager
+from app import bcrypt
+@login_manager.user_loader
+def _user_loader(user_id):
+    return User.query.get(int(user_id))
 
 class User(db.Model):
     id= db.Column(db.Integer, primary_key=True)
     password_hash = db.Column(db.String(255))
     username = db.Column(db.String(64), unique=True)
     active = db.Column(db.Boolean, default=True)
-    admin = db.Column(db.Boolean, default=False)
     created_timestamp = db.Column(db.DateTime, default=datetime.datetime.now)
 
     def get_id(self):
@@ -24,15 +27,16 @@ class User(db.Model):
     def is_admin(self):
         return self.admin
 
+    # menerima password, return hashed version
     @staticmethod
     def make_password(plaintext):
         return bcrypt.generate_password_hash(plaintext)
 
-
+    # mencocokan password input dan hash password
     def check_password(self, raw_password):
         return bcrypt.check_password_hash(self.password_hash, raw_password)
 
-
+    # buat user dan sekaligus melakukan hashing pass before saving
     @classmethod
     def create(cls, username, password, **kwargs):
         return User(
@@ -40,7 +44,7 @@ class User(db.Model):
             password_hash=User.make_password(password),
             **kwargs)
 
-
+    # menerima user dan pass untuk dicek
     @staticmethod
     def authenticate(username, password):
         user = User.query.filter(User.username == username).first()
@@ -69,7 +73,6 @@ class Schedules(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     periode_id = db.Column(db.Integer, db.ForeignKey("periode.id"), nullable=False)
     bidan_id = db.Column(db.Integer, db.ForeignKey("bidan.id", ondelete='SET NULL'), nullable=True)
-    #bidan = db.relationship("Bidan", cascade="all", backref="Schedules")
     name = db.Column(db.String(50), nullable=False)
     nip = db.Column(db.String(20), nullable=True)
     officer = db.Column(db.String(20), nullable=False)

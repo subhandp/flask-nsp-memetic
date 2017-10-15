@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from "macro/form_field.html" import form_field %}
+{% block class_container %}container{% endblock %}
+{% block nav_login %} active {% endblock %}
+{% block extra_styles %}
+{% endblock %}
+
+{% block extra_scripts %}
+{% endblock%}
+
+{%  block content %}
+<div class="row">
+          <div class="col-lg-offset-3 col-lg-6">
+            <div class="bs-component">
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h3 class="panel-title"><li class="fa fa-user"></li> Login</h3>
+                </div>
+                  <form action="{{url_for('login')}}" class="form" method="post">
+                    <div class="panel-body">
+                            {{ form_field(login_form.username) }}
+                            {{ form_field(login_form.password) }}
+                            <div class="form-group">
+                                <div class="col-sm-9">
+                                    <div class="checkbox">
+                                        <label>{{ login_form.remember_me() }} Remember me</label>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                    <div class="panel-footer"><button type="submit" class="btn btn-success"> Log in</button></div>
+                  </form>
+              </div>
+            </div>
+          </div>
+  </div>
+{% endblock %}
