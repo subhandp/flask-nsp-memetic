@@ -2,7 +2,8 @@ from flask_admin import Admin
 from app import app, db
 from flask_admin.contrib.sqla import ModelView
 from models import Schedules, Bidan, Periode, User
-from wtforms.fields import SelectField, PasswordField
+from wtforms.fields import SelectField, PasswordField, IntegerField
+from wtforms import validators
 from flask_admin.menu import MenuLink
 from flask_admin import AdminIndexView, expose
 from flask import g, url_for, request, redirect
@@ -19,17 +20,24 @@ class IndexView(AdminIndexView):
     def index(self):
         if not (g.user.is_authenticated):
             return redirect(url_for('login', next=request.path))
-        return self.render('admin/index.html')
+        prd = Periode.query.all()
+        bdn = Bidan.query.all()
+        bdnsn = Bidan.query.filter((Bidan.officer == "SN") | (Bidan.officer == "KT") | (Bidan.officer == "KR")).all()
+        bdnjr = Bidan.query.filter(Bidan.officer == "JR").all()
+        param = {"bidan": len(bdn), "bidan_sn": len(bdnsn), "bidan_jr": len(bdnjr), "periode": len(prd)}
+        return self.render('admin/index.html', data=param)
+
 
 class UserModelView(BaseModelView):
     column_filters = ['username']
     column_list = ['username', 'created_timestamp']
     column_searchable_list = ['username']
 
-    form_columns = ['username', 'password']
     form_extra_fields = {
         'password': PasswordField('New password')
     }
+
+    form_columns = ['username', 'password']
 
     def on_model_change(self, form, model, is_created):
         if form.password.data:
@@ -42,7 +50,12 @@ class SchedulesModelView(BaseModelView):
     column_searchable_list = ['name']
     column_filters = ['name', 'periode']
     column_list = ['name', 'nip', 'officer', 'tim', 'shift', 'rest_shift', 'periode']
-    form_columns = ['name', 'nip', 'officer', 'tim', 'shift', 'rest_shift', 'periode']
+
+    form_extra_fields = {
+        'bidan_id': IntegerField('ID Bidan', [validators.DataRequired()])
+    }
+
+    form_columns = ['bidan', 'bidan_id', 'shift', 'rest_shift', 'periode']
     _tim_choices = [(choice, label) for choice, label in [
         ('none', 'None'),
         ('tim1', 'Tim 1'),
@@ -65,6 +78,13 @@ class SchedulesModelView(BaseModelView):
         'tim': _tim_choices,
         'officer': _officer_choices
     }
+
+    def on_model_change(self, form, model, is_created):
+        if is_created:
+            model.init_temp_detail_bidan()
+        return super(SchedulesModelView, self).on_model_change(
+            form, model, is_created
+        )
 
 class PeriodeModelView(BaseModelView):
     column_searchable_list = ['periode']

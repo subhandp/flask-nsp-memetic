@@ -113,11 +113,16 @@ def homepage():
     periode_date = datetime.date(int(periode_split[0]), int(periode_split[1]), 1)
     days = calendar.monthrange(periode_date.year, periode_date.month)[1]
 
+    kt = [shift_list(table_query.filter((Schedules.officer == "KT") & (Schedules.tim == "tim1")).filter(Periode.periode == periode_date).all()),
+          shift_list(table_query.filter((Schedules.officer == "KT") & (Schedules.tim == "tim2")).filter(Periode.periode == periode_date).all()),
+          shift_list(table_query.filter((Schedules.officer == "KT") & (Schedules.tim == "tim3")).filter(Periode.periode == periode_date).all())]
+
+    tim = [shift_list(table_query.filter((Schedules.tim == "tim1") & (Schedules.officer != "KT")).filter(Periode.periode == periode_date).order_by(Schedules.bidan_id.asc()).all()),
+           shift_list(table_query.filter((Schedules.tim == "tim2") & (Schedules.officer != "KT")).filter(Periode.periode == periode_date).order_by(Schedules.bidan_id.asc()).all()),
+           shift_list(table_query.filter((Schedules.tim == "tim3") & (Schedules.officer != "KT")).filter(Periode.periode == periode_date).order_by(Schedules.bidan_id.asc()).all())]
+
     periode_schedule = {"kr": shift_list(table_query.filter(Schedules.officer == "KR").filter(Periode.periode == periode_date).all()),
-             "kt1": shift_list(table_query.filter((Schedules.officer == "KT") & (Schedules.tim == "tim1")).filter(Periode.periode == periode_date).all()),
-             "kt2": shift_list(table_query.filter((Schedules.officer == "KT") & (Schedules.tim == "tim2")).filter(Periode.periode == periode_date).all()),
-             "tim1": shift_list(table_query.filter((Schedules.tim == "tim1") & (Schedules.officer != "KT")).filter(Periode.periode == periode_date).order_by(Schedules.bidan_id.asc()).all()),
-             "tim2": shift_list(table_query.filter((Schedules.tim == "tim2") & (Schedules.officer != "KT")).filter(Periode.periode == periode_date).order_by(Schedules.bidan_id.asc()).all())}
+                        "kt": kt, "tim": tim}
 
     # print(json.dumps(periode_schedule, indent=4, sort_keys=False))
     return render_template('home.html', periode=list_periode, table=periode_schedule, periode_value=periode_periode, days=days)
@@ -222,11 +227,15 @@ def penjadwalan_proses(slug):
                     flash('%s, rest jadwal berhasil diubah.' % bidan_name, 'success')
 
 
-    table = {"kr": shift_list(table_query.filter(Bidan.officer == "KR").all()),
-             "kt1": shift_list(table_query.filter((Bidan.officer == "KT") & (Bidan.tim == "tim1")).all()),
-             "kt2": shift_list(table_query.filter((Bidan.officer == "KT") & (Bidan.tim == "tim2")).all()),
-             "tim1": shift_list(table_query.filter((Bidan.tim == "tim1") & (Bidan.officer != "KT")).order_by(Bidan.id.asc()).all()),
-             "tim2": shift_list(table_query.filter((Bidan.tim == "tim2") & (Bidan.officer != "KT")).order_by(Bidan.id.asc()).all())}
+    kt = [shift_list(table_query.filter((Bidan.officer == "KT") & (Bidan.tim == "tim1")).all()),
+          shift_list(table_query.filter((Bidan.officer == "KT") & (Bidan.tim == "tim2")).all()),
+          shift_list(table_query.filter((Bidan.officer == "KT") & (Bidan.tim == "tim3")).all())]
+
+    tim = [shift_list(table_query.filter((Bidan.tim == "tim1") & (Bidan.officer != "KT")).order_by(Bidan.id.asc()).all()),
+           shift_list(table_query.filter((Bidan.tim == "tim2") & (Bidan.officer != "KT")).order_by(Bidan.id.asc()).all()),
+           shift_list(table_query.filter((Bidan.tim == "tim3") & (Bidan.officer != "KT")).order_by(Bidan.id.asc()).all())]
+
+    table = {"kr": shift_list(table_query.filter(Bidan.officer == "KR").all()), "kt": kt, "tim": tim}
 
     return render_template('penjadwalan.html', table=table, periode=periode_db, days=days, scheduling_process=logs)
 

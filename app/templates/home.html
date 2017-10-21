@@ -66,58 +66,35 @@
 
                     </tr>
 
-                    <tr>
-                      <td><strong>TIM 1</strong></td>
-                    </tr>
-                    <tr>
-                      <td class="table-number">-</td>
-                      {% for table in table['kt1'] %}
-                          <td>{{ table.name }} ({{table.officer}})</td>
-                          <td>{{ table.nip|default('<unknown>', True) }}</td>
+                    {% for i in range(0, (table['kt']) | length) %}
+                        <tr>
+                          <td><strong>TIM {{ loop.index }}</strong></td>
+                        </tr>
 
-                          {{ shift_element(table,days) }}
-
-                      {% endfor %}
-
-                    </tr>
-
-                    {% for table in table['tim1'] %}
-                      <tr>
+                        <tr>
                           <td class="table-number">-</td>
-                          <td>{{ table.name }} ({{table.officer}})</td>
-                          <td>{{ table.nip|default('<unknown>', True) }}</td>
+                          {% for table in table['kt'][i] %}
+                              <td>{{ table.name }} ({{table.officer}})</td>
+                              <td>{{ table.nip|default('<unknown>', True) }}</td>
 
-                          {{ shift_element(table,days) }}
+                              {{ shift_element(table,days) }}
 
-                      </tr>
+                          {% endfor %}
+                        </tr>
+
+                        {% for table in table['tim'][i] %}
+                          <tr>
+                              <td class="table-number">-</td>
+                              <td>{{ table.name }} ({{table.officer}})</td>
+                              <td>{{ table.nip|default('<unknown>', True) }}</td>
+
+                              {{ shift_element(table,days) }}
+
+                          </tr>
+                        {% endfor %}
+
                     {% endfor %}
 
-                    <tr>
-                      <td><strong>TIM 2</strong></td>
-                    </tr>
-                    <tr>
-                      <td class="table-number">-</td>
-                      {% for table in table['kt2'] %}
-                          <td>{{ table.name }} ({{table.officer}})</td>
-                          <td>{{ table.nip|default('<unknown>', True) }}</td>
-
-                          {{ shift_element(table,days) }}
-
-                      {% endfor %}
-
-                    </tr>
-
-
-                    {% for table in table['tim2'] %}
-                      <tr>
-                          <td class="table-number">-</td>
-                          <td>{{ table.name }} ({{table.officer}})</td>
-                          <td>{{ table.nip|default('<unknown>', True) }}</td>
-
-                          {{ shift_element(table,days) }}
-
-                      </tr>
-                    {% endfor %}
 
                   </tbody>
                 </table>

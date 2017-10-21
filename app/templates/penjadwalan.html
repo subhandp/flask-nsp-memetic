@@ -231,67 +231,38 @@
                         {% endfor %}
                     </tr>
 
-                    <tr>
-                      <td><strong>TIM 1</strong></td>
-                    </tr>
-                    <tr>
-                      <td class="table-number">-</td>
-                      {% for table in table['kt1'] %}
-                          <td>{{ table.name }} ({{table.officer}})</td>
-                          <td>{{ table.nip|default('<unknown>', True) }}</td>
+                    {% for i in range(0, (table['kt']) | length) %}
+                        <tr>
+                          <td><strong>TIM {{ loop.index }}</strong></td>
+                        </tr>
 
-                          {{ shift_element(table,days) }}
-
-                          <td>
-                            <button type="button" class="btn btn-default btn-xs edit-rest" id={{table.schedule_id}} >Edit</button>
-                          </td>
-                        {% endfor %}
-                    </tr>
-
-                    {% for table in table['tim1'] %}
-                      <tr>
+                        <tr>
                           <td class="table-number">-</td>
-                          <td>{{ table.name }} ({{table.officer}})</td>
-                          <td>{{ table.nip|default('<unknown>', True) }}</td>
+                          {% for table in table['kt'][i] %}
+                              <td>{{ table.name }} ({{table.officer}})</td>
+                              <td>{{ table.nip|default('<unknown>', True) }}</td>
 
-                          {{ shift_element(table,days) }}
+                              {{ shift_element(table,days) }}
+                              <td>
+                                <button type="button" class="btn btn-default btn-xs edit-rest" id={{table.schedule_id}} >Edit</button>
+                              </td>
+                          {% endfor %}
+                        </tr>
 
-                          <td>
-                            <button type="button" class="btn btn-default btn-xs edit-rest" id={{table.schedule_id}} >Edit</button>
-                          </td>
-                      </tr>
-                    {% endfor %}
+                        {% for table in table['tim'][i] %}
+                          <tr>
+                            <td class="table-number">-</td>
+                            <td>{{ table.name }} ({{table.officer}})</td>
+                            <td>{{ table.nip|default('<unknown>', True) }}</td>
 
-                    <tr>
-                      <td><strong>TIM 2</strong></td>
-                    </tr>
-                    <tr>
-                      <td class="table-number">-</td>
-                      {% for table in table['kt2'] %}
-                          <td>{{ table.name }} ({{table.officer}})</td>
-                          <td>{{ table.nip|default('<unknown>', True) }}</td>
+                            {{ shift_element(table,days) }}
 
-                          {{ shift_element(table,days) }}
-
-                          <td>
-                            <button type="button" class="btn btn-default btn-xs edit-rest" id={{table.schedule_id}} >Edit</button>
-                          </td>
+                            <td>
+                                <button type="button" class="btn btn-default btn-xs edit-rest" id={{table.schedule_id}} >Edit</button>
+                            </td>
+                          </tr>
                         {% endfor %}
-                    </tr>
 
-
-                    {% for table in table['tim2'] %}
-                      <tr>
-                          <td class="table-number">-</td>
-                          <td>{{ table.name }} ({{table.officer}})</td>
-                          <td>{{ table.nip|default('<unknown>', True) }}</td>
-
-                          {{ shift_element(table,days) }}
-
-                          <td>
-                            <button type="button" class="btn btn-default btn-xs edit-rest" id={{table.schedule_id}} data-toggle="modal" data-target="#myModal">Edit</button>
-                          </td>
-                      </tr>
                     {% endfor %}
 
                   </tbody>

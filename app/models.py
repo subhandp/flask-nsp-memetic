@@ -73,12 +73,26 @@ class Schedules(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     periode_id = db.Column(db.Integer, db.ForeignKey("periode.id"), nullable=False)
     bidan_id = db.Column(db.Integer, db.ForeignKey("bidan.id", ondelete='SET NULL'), nullable=True)
-    name = db.Column(db.String(50), nullable=False)
-    nip = db.Column(db.String(20), nullable=True)
-    officer = db.Column(db.String(20), nullable=False)
-    tim = db.Column(db.String(10), nullable=False)
     shift = db.Column(db.Text, default="", nullable=True)
     rest_shift = db.Column(db.Text, default="CLEAR", nullable=True)
+    # TEMP DETAIL BIDAN
+    name = db.Column(db.String(50), nullable=True)
+    nip = db.Column(db.String(20), nullable=True)
+    officer = db.Column(db.String(20), nullable=True)
+    tim = db.Column(db.String(10), nullable=True)
+
+    def __init__(self, *args, **kwargs):
+        super(Schedules, self).__init__(*args, **kwargs)  # call parent constructor
+        self.init_temp_detail_bidan()
+
+    def init_temp_detail_bidan(self):
+        if self.bidan_id is not None:
+            bdn = db.session.query(Bidan).get(self.bidan_id)
+            self.name = bdn.name
+            self.nip = bdn.nip
+            self.officer = bdn.officer
+            self.tim = bdn.tim
+
 
     def __repr__(self):
         return '<Schedules %s>' % self.periode
@@ -99,4 +113,5 @@ class Bidan(db.Model):
         return '<Bidan %s>' % self.name
 
     def __unicode__(self):
-        return self.name or ''
+        ob = "[%d] %s" % (self.id, self.name)
+        return  ob or ''

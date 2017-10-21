@@ -1,5 +1,25 @@
 {% extends "admin/master.html" %}
 
 {% block body %}
-    <h3>Hello, {{g.user.username}}</h3>
-{% endblock %}
+<h3>Hello, {{g.user.username}}</h3>
+
+<table class="table table-bordered table-responsive">
+    <thead>
+    <tr>
+        <th>Total Periode</th>
+        <th>Total Bidan</th>
+        <th>Total Bidan SN</th>
+        <th>Total Bidan JR</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>{{data.periode}}</td>
+        <td>{{data.bidan}}</td>
+        <td>{{data.bidan_sn}}</td>
+        <td>{{data.bidan_jr}}</td>
+    </tr>
+    </tbody>
+</table>
+
+        {% endblock %}
