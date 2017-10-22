@@ -23,6 +23,7 @@ def create_schedule_db(periode_date):
     db.session.commit()
 
 
+
 def get_hours_total(temp_obj):
     total_jam_kerja = 0
     p, s, m = 6, 7, 11
@@ -30,30 +31,32 @@ def get_hours_total(temp_obj):
     if temp_obj['rest_shift'] is not None:
         total_rest = len(temp_obj['rest_shift'])
         total_jam = 0
-        for shift in temp_obj['rest_shift']:
+        for hari, shift in enumerate(temp_obj['rest_shift']):
             if shift == "P":
                 total_jam = total_jam + p
             elif shift == "S":
                 total_jam = total_jam + s
             elif shift == "M":
                 total_jam = total_jam + m
-        total_jam_kerja += total_jam
-
-
-    if temp_obj['shift'] is not None:
-        day = len(temp_obj['shift']) - total_rest
-        total_jam = 0
-        for index in range(len(temp_obj['shift'])):
-            if index != day:
-                shift = temp_obj['shift'][index]
+            elif shift == "-" and temp_obj['shift'] is not None:
+                shift = temp_obj["shift"][hari]
                 if shift == "P":
                     total_jam = total_jam + p
                 elif shift == "S":
                     total_jam = total_jam + s
                 elif shift == "M":
                     total_jam = total_jam + m
-            else:
-                break
+        total_jam_kerja += total_jam
+    elif temp_obj['shift'] is not None:
+        total_jam = 0
+        for hari, shift in enumerate(temp_obj['shift']):
+            if shift == "P":
+                total_jam = total_jam + p
+            elif shift == "S":
+                total_jam = total_jam + s
+            elif shift == "M":
+                total_jam = total_jam + m
+
         total_jam_kerja += total_jam
 
 
@@ -232,7 +235,7 @@ def penjadwalan_proses(slug):
                     rest_req = shift_list(table_query.filter(Schedules.id == request.json['schedule_id']).all())
                     return json.dumps({'status': 'OK', 'days': days, 'res_data': rest_req})
                 elif request.json['ajax'] == 'generate-rest-jadwal':
-                    result = generate_pattern_schedule(periode_date)
+                    result = generate_pattern_schedule(periode_date, days)
                     if result:
                         flash('Rest jadwal berhasil digenerate.', 'success')
                     else:
@@ -251,15 +254,17 @@ def penjadwalan_proses(slug):
                     rest_schedule_id = int(request.form["rest_schedule_id"])
                     bidan_name = str(request.form["bidan-name"]).upper()
                     rest_shift = request.form.getlist("rest-shift")
-                    rest = []
+                    null_rest = True
                     for shift in rest_shift:
                         if shift != '-':
-                            rest.append(shift)
+                            null_rest = False
 
-                    if len(rest) > 0:
-                        rest_str = ','.join(str(i) for i in rest)
+                    if null_rest:
+                        rest_str = "CLEAR"
                     else:
-                        rest_str = 'CLEAR'
+                        rest_str = ",".join(str(i) for i in rest_shift)
+
+                    print rest_str
 
                     rest_db = Schedules.query.filter(Schedules.id == rest_schedule_id).first()
                     rest_db.rest_shift = rest_str
