@@ -51,6 +51,7 @@
                         <th>{{loop.index}}</th>
                       {% endfor %}
 
+                        <th>JK</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -61,6 +62,8 @@
                           <td>{{ table.nip|default('<unknown>', True) }}</td>
 
                           {{ shift_element(table,days) }}
+
+                        <td>{{ table.total_jam_kerja}}</td>
 
                       {% endfor %}
 
@@ -79,6 +82,7 @@
 
                               {{ shift_element(table,days) }}
 
+                            <td>{{ table.total_jam_kerja}}</td>
                           {% endfor %}
                         </tr>
 
@@ -90,6 +94,7 @@
 
                               {{ shift_element(table,days) }}
 
+                              <td>{{ table.total_jam_kerja}}</td>
                           </tr>
                         {% endfor %}
 

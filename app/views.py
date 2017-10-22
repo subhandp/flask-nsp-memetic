@@ -22,6 +22,44 @@ def create_schedule_db(periode_date):
         db.session.add(sch)
     db.session.commit()
 
+
+def get_hours_total(temp_obj):
+    total_jam_kerja = 0
+    p, s, m = 6, 7, 11
+    total_rest = 0
+    if temp_obj['rest_shift'] is not None:
+        total_rest = len(temp_obj['rest_shift'])
+        total_jam = 0
+        for shift in temp_obj['rest_shift']:
+            if shift == "P":
+                total_jam = total_jam + p
+            elif shift == "S":
+                total_jam = total_jam + s
+            elif shift == "M":
+                total_jam = total_jam + m
+        total_jam_kerja += total_jam
+
+
+    if temp_obj['shift'] is not None:
+        day = len(temp_obj['shift']) - total_rest
+        total_jam = 0
+        for index in range(len(temp_obj['shift'])):
+            if index != day:
+                shift = temp_obj['shift'][index]
+                if shift == "P":
+                    total_jam = total_jam + p
+                elif shift == "S":
+                    total_jam = total_jam + s
+                elif shift == "M":
+                    total_jam = total_jam + m
+            else:
+                break
+        total_jam_kerja += total_jam
+
+
+    return total_jam_kerja
+
+
 def shift_list(obj):
     new_obj = []
     for result in obj:
@@ -43,6 +81,8 @@ def shift_list(obj):
             temp_obj["rest_shift"] = result.rest_shift.split(",")
         else:
             temp_obj["rest_shift"] = None
+
+        temp_obj['total_jam_kerja'] = get_hours_total(temp_obj)
 
         temp_obj["schedule_id"] = result.schedule_id
         new_obj.append(temp_obj)

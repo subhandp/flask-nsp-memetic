@@ -211,7 +211,7 @@
                       {% for i in range(days) %}
                         <th>{{loop.index}}</th>
                       {% endfor %}
-
+                        <th>JK</th>
                       <th>Aksi</th>
                     </tr>
                   </thead>
@@ -224,6 +224,7 @@
 
                           {{ shift_element(table,days) }}
 
+                        <td>{{ table.total_jam_kerja}}</td>
                           <td>
                             <!-- <a href="#">Edit</a> -->
                             <button type="button" class="btn btn-default btn-xs edit-rest" id={{table.schedule_id}} >Edit</button>
@@ -243,6 +244,9 @@
                               <td>{{ table.nip|default('<unknown>', True) }}</td>
 
                               {{ shift_element(table,days) }}
+
+                            <td>{{ table.total_jam_kerja}}</td>
+
                               <td>
                                 <button type="button" class="btn btn-default btn-xs edit-rest" id={{table.schedule_id}} >Edit</button>
                               </td>
@@ -256,6 +260,8 @@
                             <td>{{ table.nip|default('<unknown>', True) }}</td>
 
                             {{ shift_element(table,days) }}
+
+                              <td>{{ table.total_jam_kerja}}</td>
 
                             <td>
                                 <button type="button" class="btn btn-default btn-xs edit-rest" id={{table.schedule_id}} >Edit</button>

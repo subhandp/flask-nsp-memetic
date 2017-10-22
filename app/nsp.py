@@ -79,15 +79,29 @@ class Memetic():
             self.bidan_w_schedule[bdn_sch.id] = {"officer": bdn_sch.officer, "rest_shift": rest_shift}
 
 
-    def generate_random_shift(self):
+    def generate_random_shift(self, length=None):
+        if length is None:
+            length = self.hari
         shift_bidan = []
         while True:
             len_shift = len(self.shift) - 1
             rand_shift = random.randint(0, len_shift)
             shift_bidan = shift_bidan + self.shift[rand_shift]
-            if len(shift_bidan) >= self.hari:
-                shift_bidan = shift_bidan[0:self.hari]
+            if len(shift_bidan) >= length:
+                shift_bidan = shift_bidan[0:length]
                 return shift_bidan
+
+
+    # def generate_random_shift(self):
+    #     shift_bidan = []
+    #     while True:
+    #         len_shift = len(self.shift) - 1
+    #         rand_shift = random.randint(0, len_shift)
+    #         shift_bidan = shift_bidan + self.shift[rand_shift]
+    #         if len(shift_bidan) >= self.hari:
+    #             shift_bidan = shift_bidan[0:self.hari]
+    #             return shift_bidan
+
 
     # print(json.dumps(self.lingkungan_individu[0], indent=4, sort_keys=False))
     def initial_populasi(self):
@@ -400,7 +414,7 @@ class Memetic():
 
 
 
-    def pairshift_overflow(self, individu, debug = False):
+    def pairshift_overflow(self, individu, process="fitness", debug=False):
         pelanggaran_total = 0
         for id, bdn_w_sch in self.bidan_w_schedule.items():
             pelanggaran = 0
@@ -413,7 +427,7 @@ class Memetic():
                 restshift = bdn_w_sch["rest_shift"]
                 for hari in range(self.hari):
                     if restshift != "CLEAR":
-                        if len(restshift)-1 >= hari:
+                        if len(restshift) - 1 >= hari:
                             shift = None
                         else:
                             total_rest_shift = len(restshift)
@@ -431,7 +445,19 @@ class Memetic():
                             pair_shift_malam += 1
                             if pair_shift_malam > 1 and h <= 7:
                                 pair_shift_malam = 0
-                                pelanggaran += 1
+                                if process == "fitness":
+                                    pelanggaran += 1
+                                elif process == "improvement":
+                                    generate_pair = self.generate_random_shift(7)
+                                    pair_day = cur_hari
+                                    generate_index = len(generate_pair) - 1
+                                    for i in generate_pair:
+                                        individu[id][pair_day] = generate_pair[generate_index]
+                                        generate_index = generate_index - 1
+                                        pair_day = pair_day - 1
+                                        if pair_day < 0:
+                                            break
+
                             malam = 0
                     elif shift == "S":
                         siang += 1
@@ -440,7 +466,18 @@ class Memetic():
                             pair_shift_siang += 1
                             if pair_shift_siang > 1 and h <= 7:
                                 pair_shift_siang = 0
-                                pelanggaran += 1
+                                if process == "fitness":
+                                    pelanggaran += 1
+                                elif process == "improvement":
+                                    generate_pair = self.generate_random_shift(7)
+                                    pair_day = cur_hari
+                                    generate_index = len(generate_pair) - 1
+                                    for i in range(7):
+                                        individu[id][pair_day] = generate_pair[generate_index]
+                                        generate_index = generate_index - 1
+                                        pair_day = pair_day - 1
+                                        if pair_day < 0:
+                                            break
                             siang = 0
                     else:
                         malam = 0
@@ -461,7 +498,56 @@ class Memetic():
 
         if debug:
             print "[PAIR SHIFT] TOTAL PELANGGARAN: %d" % (pelanggaran_total)
-        return pelanggaran_total
+
+        if process == "fitness":
+            return pelanggaran_total
+        elif process == "improvement":
+            return individu
+
+
+    def working_hours(self, individu, process="fitness", debug=False):
+        pelanggaran_total = 0
+        p, s, m = 6, 7, 11
+        min_hours = 160
+        max_hours = 192
+        for id, bdn_w_sch in self.bidan_w_schedule.items():
+            pelanggaran = 0
+            if bdn_w_sch["officer"] == "SN" or bdn_w_sch["officer"] == "JR":
+                restshift = bdn_w_sch["rest_shift"]
+                total_jam = 0
+                for hari in range(self.hari):
+                    if restshift != "CLEAR":
+                        if len(restshift) - 1 >= hari:
+                            shift = restshift[hari]
+                        else:
+                            total_rest_shift = len(restshift)
+                            cur_hari = hari - total_rest_shift
+                            shift = individu[id][cur_hari]
+                    else:
+                        cur_hari = hari
+                        shift = individu[id][cur_hari]
+
+                    if shift == "P":
+                        total_jam = total_jam + p
+                    elif shift == "S":
+                        total_jam = total_jam + s
+                    elif shift == "M":
+                        total_jam = total_jam + m
+
+                # print "[TOTAL_JAM] Bidan ke - %d adalah (%d)" % (id, total_jam)
+
+                if total_jam < min_hours or total_jam > max_hours:
+                    if process == "fitness":
+                        pelanggaran = pelanggaran + 1
+                    elif process == "improvement":
+                        individu[id] = self.generate_random_shift()
+
+            pelanggaran_total = pelanggaran_total + pelanggaran
+
+        if process == "fitness":
+            return pelanggaran_total
+        elif process == "improvement":
+            return individu
 
 
     def fitness(self, debug=False):
