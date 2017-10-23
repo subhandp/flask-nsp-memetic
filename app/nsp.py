@@ -308,7 +308,7 @@ class Memetic():
 
             pelanggaran_off_siang, pelanggaran_off_malam = 0, 0
             pelanggaran_off_day, pelanggaran_off = 0, 0
-            siang, malam, off = 0, 0, 0
+            siang, malam, pagi, off = 0, 0, 0, 0
 
             if bdn_w_sch["officer"] == "SN" or bdn_w_sch["officer"] == "JR":
                 restshift = bdn_w_sch["rest_shift"]
@@ -340,31 +340,50 @@ class Memetic():
                         else:
                             next3shift = "E"
 
-
                     if shift == "O":
-                        off += 1
                         siang = 0
                         malam = 0
+                        pagi = 0
+                        off += 1
                         if off > 2:
-
                             if process == "fitness":
                                 pelanggaran_off += 1
                             elif process == "improvement":
                                 individu[id][cur_hari] = "P"
                             off = 0
+
                     elif shift == "P":
                         siang = 0
                         malam = 0
                         off = 0
-                        if nextshift == "O":
+                        pagi += 1
+                        if pagi == 4:
+                            if next2shift == "O":
+                                if process == "fitness":
+                                    pelanggaran_off_day += 1
+                                elif process == "improvement":
+                                    individu[id][cur_hari + 2] = "P"
 
-                            if process == "fitness":
-                                pelanggaran_off_day += 1
-                            elif process == "improvement":
-                                individu[id][cur_hari + 1] = "P"
+                            if nextshift != "O" and nextshift != "E":
+                                if process == "fitness":
+                                    pelanggaran_off_day += 1
+                                elif process == "improvement":
+                                    individu[id][cur_hari + 1] = "O"
+                                    # if next2shift == "O" and next3shift != "O":
+                                    #     individu[id][cur_hari + 2] = "P"
+
+                                pagi = 0
+                        elif pagi < 4:
+                            if nextshift == "O":
+                                if process == "fitness":
+                                    pelanggaran_off_day += 1
+                                elif process == "improvement":
+                                    individu[id][cur_hari + 1] = "P"
+
                     elif shift == "S":
                         malam = 0
                         off = 0
+                        pagi = 0
                         if siang == 0:
                             if nextshift == "O":
 
@@ -393,6 +412,7 @@ class Memetic():
                     elif shift == "M":
                         siang = 0
                         off = 0
+                        pagi = 0
                         if malam == 0 and nextshift != "M" and nextshift != "E":
                             malam += 1
                             if process == "fitness":
@@ -417,15 +437,26 @@ class Memetic():
                                     if pair_day < 0:
                                         break
                         elif malam == 1:
-                            if nextshift == "O" and next2shift == "O" or nextshift == "E" or next2shift == "E":
-                                nxt = None
-                            else:
-
+                            if nextshift != "O" and nextshift != "E":
                                 if process == "fitness":
                                     pelanggaran_off_malam += 1
                                 elif process == "improvement":
                                     individu[id][cur_hari + 1] = "O"
+                            if next2shift != "O" and next2shift != "E":
+                                if process == "fitness":
+                                    pelanggaran_off_malam += 1
+                                elif process == "improvement":
                                     individu[id][cur_hari + 2] = "O"
+
+                            # if nextshift == "O" and next2shift == "O" or nextshift == "E" or next2shift == "E":
+                            #     nxt = None
+                            # else:
+                            #
+                            #     if process == "fitness":
+                            #         pelanggaran_off_malam += 1
+                            #     elif process == "improvement":
+                            #         individu[id][cur_hari + 1] = "O"
+                            #         individu[id][cur_hari + 2] = "O"
                             malam = 0
                         else:
                             malam += 1
@@ -433,6 +464,7 @@ class Memetic():
                         siang = 0
                         malam = 0
                         off = 0
+                        pagi = 0
 
                 pelanggaran_total += pelanggaran_off_malam + pelanggaran_off_siang + pelanggaran_off_day + pelanggaran_off
 
@@ -547,7 +579,7 @@ class Memetic():
         pelanggaran_total = 0
         p, s, m = 6, 7, 11
         min_hours = 120
-        max_hours = 170
+        max_hours = 192
         for id, bdn_w_sch in self.bidan_w_schedule.items():
             pelanggaran = 0
             if bdn_w_sch["officer"] == "SN" or bdn_w_sch["officer"] == "JR":
@@ -871,14 +903,17 @@ def generate_pattern_schedule(periode_date, days):
                         rest.append("O")
                         temp_static = ",".join(rest)
                     else:
-                        temp = "CLEAR"
-                        # pola_pagi = 6
-                        # pola_pagi = pola_pagi - pg
-                        # if pola_pagi > 0:
-                        #     rest = ["P" for i in range(pola_pagi)]
-                        #     temp = ",".join(rest)
-                        # else:
-                        #     temp = "CLEAR"
+                        if pg >= 4:
+                            temp = "O"
+                        else:
+                            temp = "CLEAR"
+                            # pola_pagi = 4
+                            # pola_pagi = pola_pagi - pg
+                            # if pola_pagi > 0:
+                            #     rest = ["P" for i in range(pola_pagi)]
+                            #     temp = ",".join(rest)
+                            # else:
+                            #     temp = "CLEAR"
 
                 elif shift[index] == "S":
                     if index >= 1:
