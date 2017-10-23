@@ -11,7 +11,7 @@ class Memetic():
     soft_penalti = 1
 
     def __init__(self, init_data):
-        #self.start_time = timeit.default_timer()
+        self.start_time = datetime.now()
         self.individu_static = {}
         self.bidan_w_schedule = {}
         self.lingkungan_individu = []
@@ -20,7 +20,6 @@ class Memetic():
         self.lingkungan_individu_fitness_interval = []
         self.elit_individu = {"fitness": 0, "individu": None, "total_elit": 2}
         self.temp_total_pelanggaran = {"min_bidan": 0, "day_off": 0, "pairshift": 0, "working_hours": 0}
-        self.start_time = datetime.now()
         self.min_jenis_shift = {
             "shift_pagi": {"sn": int(init_data["shift_pagi_sn"]), "jr": int(init_data["shift_pagi_jr"])},
             "shift_siang": {"sn": int(init_data["shift_siang_sn"]), "jr": int(init_data["shift_siang_jr"])},
@@ -40,27 +39,34 @@ class Memetic():
         self.print_individu(self.elit_individu["individu"])
         self.single_fitness(self.elit_individu["individu"], True)
 
+
     def print_individu(self, individu):
-        for pr in [1, 2]:
+        for pr in [1,2]:
             full_individu = dict(self.individu_static.items() + individu.items())
             for id, myindividu in full_individu.items():
                 rest_shift = self.bidan_w_schedule[id]["rest_shift"]
                 print id,
                 if rest_shift != "CLEAR":
-                    for shift in rest_shift:
-                        if pr == 1:
-                            print " %s [%s/r]" % (shift, self.bidan_w_schedule[id]["officer"]),
-                        elif pr == 2:
-                            print " %s " % (shift),
-                else:
-                    rest_shift = []
+                    for index, shift in enumerate(rest_shift):
+                        if shift == "-":
+                            shift = full_individu[id][index]
+                            if pr == 1:
+                                print " %s [%s]" % (shift, self.bidan_w_schedule[id]["officer"]),
+                            if pr == 2:
+                                print " %s " % (shift),
+                        else:
+                            if pr == 1:
+                                print " %s [%s][rest]" % (shift, self.bidan_w_schedule[id]["officer"]),
+                            elif pr == 2:
+                                print " %s " % (shift),
 
-                current_sch = self.hari - len(rest_shift)
-                for i in range(current_sch):
-                    if pr == 1:
-                        print " %s [%s]" % (full_individu[id][i], self.bidan_w_schedule[id]["officer"]),
-                    if pr == 2:
-                        print " %s " % (full_individu[id][i]),
+                else:
+                    for shift in myindividu:
+                        if pr == 1:
+                            print " %s [%s]" % (shift, self.bidan_w_schedule[id]["officer"]),
+                        if pr == 2:
+                            print " %s " % (shift),
+
                 print "\n\n"
 
             print "\n\n"
@@ -91,17 +97,6 @@ class Memetic():
             if len(shift_bidan) >= length:
                 shift_bidan = shift_bidan[0:length]
                 return shift_bidan
-
-
-    # def generate_random_shift(self):
-    #     shift_bidan = []
-    #     while True:
-    #         len_shift = len(self.shift) - 1
-    #         rand_shift = random.randint(0, len_shift)
-    #         shift_bidan = shift_bidan + self.shift[rand_shift]
-    #         if len(shift_bidan) >= self.hari:
-    #             shift_bidan = shift_bidan[0:self.hari]
-    #             return shift_bidan
 
 
     # print(json.dumps(self.lingkungan_individu[0], indent=4, sort_keys=False))
@@ -318,7 +313,9 @@ class Memetic():
                             cur_hari = hari
                             shift = individu[id][cur_hari]
                         else:
-                            shift = None
+                            cur_hari = hari
+                            shift = restshift[hari]
+                            # shift = None
 
                     else:
                         cur_hari = hari
@@ -448,15 +445,6 @@ class Memetic():
                                 elif process == "improvement":
                                     individu[id][cur_hari + 2] = "O"
 
-                            # if nextshift == "O" and next2shift == "O" or nextshift == "E" or next2shift == "E":
-                            #     nxt = None
-                            # else:
-                            #
-                            #     if process == "fitness":
-                            #         pelanggaran_off_malam += 1
-                            #     elif process == "improvement":
-                            #         individu[id][cur_hari + 1] = "O"
-                            #         individu[id][cur_hari + 2] = "O"
                             malam = 0
                         else:
                             malam += 1

@@ -177,6 +177,57 @@
             })
 
         });
+
+
+        $( ".link-hari" ).on( "click", function() {
+            $(".modal-body-min-bidan").empty();
+            var hari = $(this).attr("hari");
+            var loading = "<center><i style='color:#008cba' class='fa fa-spinner fa-pulse fa-5x fa-fw wait-proses'></i></center>";
+            $(".modal-body-min-bidan").append(loading);
+            var request = $.ajax({
+                    url: window.location.pathname,
+                    type: 'POST',
+                    data: JSON.stringify({
+                      ajax: 'get-detail-min-bidan',
+                      hari: hari
+                    }),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                });
+                request.done(function(data){
+                    $("#detail-min-bidan-modal").modal('show');
+                    $(".hari-min-bidan").text(parseInt(hari)+1);
+
+                    var dinas = [data.pagi, data.siang, data.malam];
+                    setTimeout(function(){
+                        $(".modal-body-min-bidan").empty();
+                        for(j = 0; j < dinas.length; j++){
+                            var data_dinas = dinas[j];
+                            if(j == 0){
+                                dns = "Dinas PAGI - ";
+                            }
+                            else if(j == 1){
+                                dns = "Dinas SIANG - ";
+                            }
+                            else if(j == 2){
+                                dns = "Dinas MALAM - ";
+                            }
+
+                            var jd = "<h4>" + dns + data_dinas.length + " orang: </h4>";
+                            $(".modal-body-min-bidan").append(jd);
+                            for(i = 0; i < data_dinas.length; i++){
+                                var nama = data_dinas[i].nama;
+                                var officer = "(" + data_dinas[i].officer + ")";
+                                $(".modal-body-min-bidan").append("<p>____"+officer+" - "+nama+"</p>");
+                            }
+
+                        }
+                    }, 1000);
+
+
+                })
+        });
+
     </script>
 {% endblock%}
 
@@ -209,7 +260,7 @@
                       <th>Nama</th>
                       <th>Nip</th>
                       {% for i in range(days) %}
-                        <th>{{loop.index}}</th>
+                        <th><a href="#" hari="{{i}}" class="link-hari">{{loop.index}}</a></th>
                       {% endfor %}
                         <th>JK</th>
                       <th>Aksi</th>
@@ -404,6 +455,24 @@
     </div>
   </div>
 </div>
+
+
+<div id="detail-min-bidan-modal" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Dinas hari ke - <strong><span class="hari-min-bidan"></span></strong></h4>
+      </div>
+      <div class="modal-body modal-body-min-bidan">
+
+
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endif %}
 {% endblock %}
 

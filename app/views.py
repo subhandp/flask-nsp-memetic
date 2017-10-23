@@ -249,6 +249,35 @@ def penjadwalan_proses(slug):
                     db.session.commit()
                     flash('Jadwal berhasil dibersihkan.', 'success')
                     return json.dumps({'status': 'OK'})
+                elif request.json['ajax'] == 'get-detail-min-bidan':
+                    hari = int(request.json['hari'])
+                    pagi = []
+                    siang = []
+                    malam = []
+                    current_schedule = table_query.all()
+                    for sch in current_schedule:
+                        if sch.shift != "":
+                            temp_shift = sch.shift.split(",")
+                            t = {"officer": sch.officer, "nama": sch.name, "nip": sch.nip}
+                            if temp_shift[hari] == "P":
+                                pagi.append(t)
+                            elif temp_shift[hari] == "S":
+                                siang.append(t)
+                            elif temp_shift[hari] == "M":
+                                malam.append(t)
+                        else:
+                            if sch.rest_shift != "CLEAR":
+                                temp_shift = sch.rest_shift.split(",")
+                                t = {"officer": sch.officer, "nama": sch.name, "nip": sch.nip}
+                                if temp_shift[hari] == "P":
+                                    pagi.append(t)
+                                elif temp_shift[hari] == "S":
+                                    siang.append(t)
+                                elif temp_shift[hari] == "M":
+                                    malam.append(t)
+
+                    return json.dumps({'status': 'OK', 'pagi': pagi, 'siang': siang, 'malam': malam})
+
             elif request.form:
                 if 'rest_schedule_id' in request.form:
                     rest_schedule_id = int(request.form["rest_schedule_id"])

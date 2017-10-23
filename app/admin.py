@@ -60,6 +60,7 @@ class SchedulesModelView(BaseModelView):
         ('none', 'None'),
         ('tim1', 'Tim 1'),
         ('tim2', 'Tim 2'),
+        ('tim3', 'Tim 3'),
     ]]
 
     _officer_choices = [(choice, label) for choice, label in [
@@ -102,6 +103,7 @@ class BidanModelView(BaseModelView):
         ('none', 'None'),
         ('tim1', 'Tim 1'),
         ('tim2', 'Tim 2'),
+        ('tim3', 'Tim 3'),
     ]]
 
     _officer_choices = [(choice, label) for choice, label in [
