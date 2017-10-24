@@ -247,6 +247,12 @@ class Memetic():
                                     individu[id][hari + 2] = "O"
                                 if next3shift != "E":
                                     individu[id][hari + 3] = "O"
+                            if need_shift == "S":
+                                if nextshift != "E":
+                                    individu[id][hari + 1] = "S"
+                                if next2shift != "E":
+                                    individu[id][hari + 2] = "O"
+
 
                             total_need = total_need - 1
                             if total_need <= 0:
@@ -430,9 +436,12 @@ class Memetic():
             pair_shift_malam = 0
             pair_shift_siang = 0
             h = 0
+            pair_patteran_malam = []
+            temp_pattern = []
             if bdn_w_sch["officer"] == "SN" or bdn_w_sch["officer"] == "JR":
                 restshift = bdn_w_sch["rest_shift"]
                 for hari in range(self.hari):
+
                     if restshift != "CLEAR":
                         if restshift[hari] == "-":
                             cur_hari = hari
@@ -444,7 +453,17 @@ class Memetic():
                         shift = individu[id][cur_hari]
 
                     h += 1
+
+                    if shift is not None:
+                        if hari + 1 <= self.hari - 1:
+                            nextshift = individu[id][cur_hari + 1]
+                        else:
+                            nextshift = "E"
+
                     if shift == "M":
+                        if nextshift == "M":
+                            pair_patteran_malam.append([cur_hari, cur_hari+1])
+
                         malam += 1
                         siang = 0
                         if malam == 2:
@@ -495,6 +514,20 @@ class Memetic():
                         malam = 0
                         siang = 0
                         h = 0
+
+            if len(pair_patteran_malam) > 3:
+                if process == "fitness":
+                    pelanggaran += 1
+                elif process == "improvement":
+                    generate_shift = self.generate_random_shift(2)
+                    rand_index = random.randint(0, len(pair_patteran_malam)-1)
+                    for i,index_hari in enumerate(pair_patteran_malam[rand_index]):
+                        if restshift != "CLEAR":
+                            if restshift[index_hari] == "-":
+                                individu[id][index_hari] = generate_shift[i]
+                        else:
+                            individu[id][index_hari] = generate_shift[i]
+
 
             if debug:
                 print "[PAIR SHIFT] PELANGGARAN BIDAN - %d" % (id)
