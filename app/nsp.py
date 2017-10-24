@@ -315,7 +315,7 @@ class Memetic():
                     if restshift != "CLEAR":
                         if hari + 1 <= self.hari - 1:
                             if restshift[hari + 1] != "-":
-                                nextrestshift = True
+                                nextrestshift = restshift[hari + 1]
                             else:
                                 nextrestshift = None
                         else:
@@ -323,7 +323,7 @@ class Memetic():
 
                         if hari + 2 <= self.hari - 1:
                             if restshift[hari + 2] != "-":
-                                next2restshift = True
+                                next2restshift = restshift[hari + 2]
                             else:
                                 next2restshift = None
                         else:
@@ -334,9 +334,7 @@ class Memetic():
 
 
                     if shift == "O":
-                        siang = 0
-                        malam = 0
-                        pagi = 0
+                        siang, malam, pagi = 0, 0, 0
                         off += 1
                         if off > 2:
                             if process == "fitness":
@@ -346,9 +344,7 @@ class Memetic():
                             off = 0
 
                     elif shift == "P":
-                        siang = 0
-                        malam = 0
-                        off = 0
+                        siang, malam, off = 0, 0, 0
                         pagi += 1
                         if pagi == 4:
                             if next2shift == "O":
@@ -380,12 +376,10 @@ class Memetic():
                                     individu[id][hari + 1] = "P"
 
                     elif shift == "S":
-                        malam = 0
-                        off = 0
-                        pagi = 0
+                        malam, off, pagi = 0, 0, 0
                         if siang == 0:
+                            
                             if nextshift == "O":
-
                                 if process == "fitness":
                                     pelanggaran_off_siang += 1
                                 elif process == "improvement":
@@ -415,9 +409,7 @@ class Memetic():
                         else:
                             siang += 1
                     elif shift == "M":
-                        siang = 0
-                        off = 0
-                        pagi = 0
+                        siang, off, pagi = 0, 0, 0
                         if malam == 0 and nextshift != "M" and nextshift != "E":
                             if nextrestshift is not None and immutable_shift is None:
                                 if process == "fitness":
@@ -465,10 +457,7 @@ class Memetic():
                         else:
                             malam += 1
                     else:
-                        siang = 0
-                        malam = 0
-                        off = 0
-                        pagi = 0
+                        siang, malam, off, pagi = 0, 0, 0, 0
 
                 pelanggaran_total += pelanggaran_off_malam + pelanggaran_off_siang + pelanggaran_off_day + pelanggaran_off
 
@@ -493,11 +482,8 @@ class Memetic():
     def pairshift_overflow(self, individu, process="fitness", debug=False):
         pelanggaran_total = 0
         for id, bdn_w_sch in self.bidan_w_schedule.items():
-            pelanggaran = 0
-            malam = 0
-            siang = 0
-            pair_shift_malam = 0
-            pair_shift_siang = 0
+            pelanggaran, pair_shift_malam, pair_shift_siang = 0, 0, 0
+            malam, siang = 0, 0
             h = 0
             pair_patteran_malam = []
             if bdn_w_sch["officer"] == "SN" or bdn_w_sch["officer"] == "JR":
@@ -553,10 +539,8 @@ class Memetic():
                         siang = 0
 
                     if h == 7:
-                        pair_shift_malam = 0
-                        pair_shift_siang = 0
-                        malam = 0
-                        siang = 0
+                        pair_shift_malam, pair_shift_siang= 0, 0
+                        malam, siang = 0, 0
                         h = 0
 
             if len(pair_patteran_malam) > 3:
@@ -786,14 +770,6 @@ class Memetic():
                         individu = individu_improvement
                         current_fitness = fitness_improvement
 
-                    # individu_improvement = self.min_bidan(individu, "improvement")
-                    # individu_improvement = self.day_off(individu_improvement, "improvement")
-                    #
-                    # fitness_improvement = self.single_fitness(individu_improvement)
-                    #
-                    # if fitness_improvement > current_fitness:
-                    #     individu = individu_improvement
-
                     self.temp_lingkungan_individu[index] = individu
 
 
@@ -939,13 +915,6 @@ def generate_pattern_schedule(periode_date, days):
                             temp = "O"
                         else:
                             temp = "CLEAR"
-                            # pola_pagi = 4
-                            # pola_pagi = pola_pagi - pg
-                            # if pola_pagi > 0:
-                            #     rest = ["P" for i in range(pola_pagi)]
-                            #     temp = ",".join(rest)
-                            # else:
-                            #     temp = "CLEAR"
 
                 elif shift[index] == "S":
                     if index >= 1:
