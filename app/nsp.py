@@ -154,147 +154,106 @@ class Memetic():
 
         return shift_count_result
 
+
     def min_bidan(self, individu, process="fitness", debug=False):
-        if process == "fitness":
-            total_fitness = self.fitness_min_bidan(individu, debug)
-            return total_fitness
-        elif process == "improvement":
-            individu = self.move_min_bidan(individu)
-            return individu
-
-
-    def fitness_min_bidan(self, individu, debug = False):
-        total_pelanggaran = 0;
+        total_pelanggaran = 0
+        data = {}
         for hari in range(self.hari):
             pelanggaran = 0
             result = self.min_bidan_shift_count(individu, hari)
-            jenis_shift = ["shift_pagi", "shift_siang", "shift_malam"]
-            for js in jenis_shift:
+            jenis_shift = {"shift_pagi": "P", "shift_siang": "S", "shift_malam": "M"}
+            for js, js_cell in jenis_shift.items():
                 if result[js]["sn"] < self.min_jenis_shift[js]["sn"]:
-                    pelanggaran += 1
-                elif result[js]["sn"] >= self.min_jenis_shift[js]["sn"]:
-                    min_total = self.min_jenis_shift[js]["sn"] + self.min_jenis_shift[js]["jr"]
-                    current_total = result[js]["sn"] + result[js]["jr"]
-                    if current_total < min_total:
+                    if process == "fitness":
                         pelanggaran += 1
+                    elif process == "improvement":
+                        data['hari'] = hari
+                        data['need_shift'] = js_cell
+                        data['total_need'] = self.min_jenis_shift[js]['sn'] - result[js]['sn']
+                        data['jenis'] = 'SN'
+                        self.min_bidan_improve(individu, data)
+                if result[js]["jr"] < self.min_jenis_shift[js]["jr"]:
+                    melanggar = False
+                    if result[js]["sn"] > self.min_jenis_shift[js]["sn"]:
+                        total_result = result[js]['sn'] + result[js]['jr']
+                        total_min = self.min_jenis_shift[js]["sn"] + self.min_jenis_shift[js]["jr"]
+                        if total_result < total_min:
+                            melanggar = True
+                    else:
+                        melanggar = True
 
-            total_pelanggaran += pelanggaran
+                    if process == "fitness" and melanggar:
+                        pelanggaran += 1
+                    elif process == "improvement" and melanggar:
+                        data['hari'] = hari
+                        data['need_shift'] = js_cell
+                        data['total_need'] = self.min_jenis_shift[js]['jr'] - self.min_jenis_shift[js]['jr']
+                        data['jenis'] = 'JR'
+                        self.min_bidan_improve(individu, data)
 
-            if debug:
-                print "[MIN BIDAN] Pelanggaran hari - %d: (%d)" % (hari, pelanggaran)
-                print "---P [SN] = %d, [JR] = %d" % (result["shift_pagi"]["sn"], result["shift_pagi"]["jr"])
-                print "---S [SN] = %d, [JR] = %d" % (result["shift_siang"]["sn"], result["shift_siang"]["jr"])
-                print "---M [SN] = %d, [JR] = %d" % (result["shift_malam"]["sn"], result["shift_malam"]["jr"])
+            if process == "fitness":
+                total_pelanggaran += pelanggaran
+
+        if process == "fitness":
+            return total_pelanggaran
+        elif process == "improvement":
+            return individu
 
 
-        if debug:
-            print "[MIN BIDAN] Total Pelanggaran: %d" % (total_pelanggaran)
-        return total_pelanggaran
+    def min_bidan_improve(self, individu, data):
+        bidan_id = self.bidan_w_schedule.keys()
+        hari = data['hari']
+        need_shift = data['need_shift']
+        total_need = data['total_need']
+        improve = True
+        while improve:
+            rand_id = random.randint(0, len(bidan_id) - 1)
+            id = bidan_id[rand_id]
+            restshift = self.bidan_w_schedule[id]['rest_shift']
+            officer = self.bidan_w_schedule[id]["officer"]
+            if officer != "KT" and officer != "KR":
+                if data['jenis'] == officer or data['jenis'] == "JR":
+                    if restshift != "CLEAR":
+                        if restshift[hari] == "-":
+                            shift = individu[id][hari]
+                        else:
+                            shift = None
+                    else:
+                        shift = individu[id][hari]
 
+                    if shift is not None:
+                        if hari + 1 <= self.hari - 1:
+                            nextshift = individu[id][hari + 1]
+                        else:
+                            nextshift = "E"
 
-    def move_min_bidan(self, individu):
-        for hari in range(self.hari):
+                        if hari + 2 <= self.hari - 1:
+                            next2shift = individu[id][hari + 2]
+                        else:
+                            next2shift = "E"
 
-            jenis_shift = {"shift_pagi": {"need": "P", "more1": "S", "more2": "M", "jenis_more1": "shift_siang",
-                                          "jenis_more2": "shift_malam"},
-                           "shift_siang": {"need": "S", "more1": "P", "more2": "M", "jenis_more1": "shift_pagi",
-                                           "jenis_more2": "shift_malam"},
-                           "shift_malam": {"need": "M", "more1": "P", "more2": "S", "jenis_more1": "shift_pagi",
-                                           "jenis_more2": "shift_siang"}}
+                        if hari + 3 <= self.hari - 1:
+                            next3shift = individu[id][hari + 3]
+                        else:
+                            next3shift = "E"
 
-            for js_shift, js_shift_data in jenis_shift.items():
-                result = self.min_bidan_shift_count(individu, hari)
-                if result[js_shift]["sn"] < self.min_jenis_shift[js_shift]["sn"] or result[js_shift]["jr"] < self.min_jenis_shift[js_shift]["jr"]:
+                    if shift is not None:
+                        if shift != need_shift:
+                            individu[id][hari] = need_shift
+                            if need_shift == "M":
+                                if nextshift != "E":
+                                    individu[id][hari + 1] = "M"
+                                if next2shift != "E":
+                                    individu[id][hari + 2] = "O"
+                                if next3shift != "E":
+                                    individu[id][hari + 3] = "O"
 
-                    jenis_bidan = ["sn", "jr"]
-                    for js_bidan in jenis_bidan:
-                        result = self.min_bidan_shift_count(individu, hari)
-                        if result[js_shift][js_bidan] < self.min_jenis_shift[js_shift][js_bidan]:
-                            data = {"jenis": js_bidan.upper(), "hari": hari, "need": js_shift_data["need"], "more1": js_shift_data["more1"], "more2": js_shift_data["more2"],
-                                    "need_min_shift": self.min_jenis_shift[js_shift][js_bidan],
-                                    "need_current": result[js_shift][js_bidan],
-                                    "shift_current_more1": result[js_shift_data["jenis_more1"]][js_bidan],
-                                    "shift_min_more1": self.min_jenis_shift[js_shift_data["jenis_more1"]][js_bidan],
-                                    "shift_current_more2": result[js_shift_data["jenis_more2"]][js_bidan],
-                                    "shift_min_more2": self.min_jenis_shift[js_shift_data["jenis_more2"]][js_bidan]}
+                            total_need = total_need - 1
+                            if total_need <= 0:
+                                improve = False
 
-                            individu = self.move_min_bidan_improve(individu, data)
         return individu
 
-
-    def move_min_bidan_improve(self, individu, data):
-        total_more1, total_more2 = 0, 0
-        total_need = data["need_min_shift"] - data["need_current"]
-
-        if data["shift_current_more1"] > data["shift_min_more1"]:
-            total_more1 = data["shift_current_more1"] - data["shift_min_more1"]
-        if data["shift_current_more2"] > data["shift_min_more2"]:
-            total_more2 = data["shift_current_more2"] - data["shift_min_more2"]
-
-        jenis = data["jenis"]
-        hari = data["hari"]
-        shift_need = data["need"]
-        shift_more1 = data["more1"]
-        shift_more2 = data["more2"]
-        for id, bdn_w_sch in self.bidan_w_schedule.items():
-            jenis_bidan = bdn_w_sch["officer"]
-            if jenis_bidan == "SN" or jenis_bidan == "JR":
-                restshift = bdn_w_sch["rest_shift"]
-                if restshift != "CLEAR":
-                    if restshift[hari] == "-":
-                        cur_hari = hari
-                    else:
-                        cur_hari = None
-
-                else:
-                    cur_hari = hari
-
-
-                if cur_hari is not None:
-                    if hari + 1 <= self.hari - 1:
-                        nextshift = individu[id][cur_hari + 1]
-                    else:
-                        nextshift = "E"
-
-                    if hari + 2 <= self.hari - 1:
-                        next2shift = individu[id][cur_hari + 2]
-                    else:
-                        next2shift = "E"
-
-                    if hari + 3 <= self.hari - 1:
-                        next3shift = individu[id][cur_hari + 3]
-                    else:
-                        next3shift = "E"
-
-
-                if cur_hari is not None:
-                    shift = individu[id][cur_hari]
-                    if jenis_bidan == jenis:
-                        if shift == shift_more1 and total_more1 > 0 and total_need > 0:
-                            individu[id][cur_hari] = shift_need
-                            if shift_need == "M":
-                                if nextshift != "E":
-                                    individu[id][cur_hari + 1] = "M"
-                                if next2shift != "E":
-                                    individu[id][cur_hari + 2] = "O"
-                                if next3shift != "E":
-                                    individu[id][cur_hari + 3] = "O"
-                            total_more1 -= 1
-                            total_need -= 1
-
-                        if shift == shift_more2 and total_more2 > 0 and total_need > 0:
-                            individu[id][cur_hari] = shift_need
-                            if shift_need == "M":
-                                if nextshift != "E":
-                                    individu[id][cur_hari + 1] = "M"
-                                if next2shift != "E":
-                                    individu[id][cur_hari + 2] = "O"
-                                if next3shift != "E":
-                                    individu[id][cur_hari + 3] = "O"
-                            total_more2 -= 1
-                            total_need -= 1
-
-        return individu
 
 
     def day_off(self, individu, process="fitness", debug=False):
@@ -415,24 +374,13 @@ class Memetic():
                             if process == "fitness":
                                 pelanggaran_off_malam += 1
                             elif process == "improvement":
-                                # 1
-                                gs = 1
-                                pair_day = cur_hari + 1
+                                individu[id][hari + 1] = "M"
                                 if next2shift != "E":
-                                    pair_day = cur_hari + 2
-                                    gs = 2
-                                if next3shift != "E":
-                                    pair_day = cur_hari + 3
-                                    gs = 3
+                                    individu[id][hari + 2] = "O"
 
-                                generate_pair = self.generate_random_shift(gs)
-                                generate_index = len(generate_pair) - 1
-                                for i in generate_pair:
-                                    individu[id][pair_day] = generate_pair[generate_index]
-                                    generate_index = generate_index - 1
-                                    pair_day = pair_day - 1
-                                    if pair_day < 0:
-                                        break
+                                if next3shift != "E":
+                                    individu[id][hari + 3] = "O"
+
                         elif malam == 1:
                             if nextshift != "O" and nextshift != "E":
                                 if process == "fitness":
@@ -747,14 +695,27 @@ class Memetic():
                         individu = individu_improvement
                         current_fitness = fitness_improvement
 
-
                     individu_improvement = self.min_bidan(individu, "improvement")
-                    individu_improvement = self.day_off(individu_improvement, "improvement")
-
                     fitness_improvement = self.single_fitness(individu_improvement)
 
                     if fitness_improvement > current_fitness:
                         individu = individu_improvement
+                        current_fitness = fitness_improvement
+
+                    individu_improvement = self.day_off(individu, "improvement")
+                    fitness_improvement = self.single_fitness(individu_improvement)
+
+                    if fitness_improvement > current_fitness:
+                        individu = individu_improvement
+                        current_fitness = fitness_improvement
+
+                    # individu_improvement = self.min_bidan(individu, "improvement")
+                    # individu_improvement = self.day_off(individu_improvement, "improvement")
+                    #
+                    # fitness_improvement = self.single_fitness(individu_improvement)
+                    #
+                    # if fitness_improvement > current_fitness:
+                    #     individu = individu_improvement
 
                     self.temp_lingkungan_individu[index] = individu
 
@@ -787,7 +748,17 @@ class Memetic():
         # print(json.dumps(self.elit_individu, indent=4, sort_keys=False))
 
     def termination(self, generasi):
+
+        self.single_fitness(self.elit_individu["individu"])
+        totalp = 0
+        for key, total in self.temp_total_pelanggaran.items():
+            totalp += total
+
         print "%d. %f" % (generasi, self.elit_individu["fitness"])
+        print "Total Pelanggaran: %d" % totalp
+        for jenis, total in self.temp_total_pelanggaran.items():
+            print "---%s: %d" % (jenis, total)
+        print " "
 
         min_fitness = min(self.lingkungan_individu_fitness)
         max_fitness = max(self.lingkungan_individu_fitness)
@@ -837,10 +808,6 @@ class Memetic():
         end_time = datetime.now()
         elapsed = str(format(end_time - self.start_time))
 
-        self.single_fitness(self.elit_individu["individu"])
-        totalp = 0
-        for key, total in self.temp_total_pelanggaran.items():
-            totalp += total
 
         data = {"individu": result_individu, "msg": msg, "generasi": generasi,
                 "elit_fitness": self.elit_individu["fitness"],
