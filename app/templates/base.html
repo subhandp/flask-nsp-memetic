@@ -28,8 +28,8 @@
                 <li class="{% block nav_home %}{% endblock %}"><a href="{{ url_for('homepage') }}">Home</a></li>
                 {% if g.user.is_authenticated %}
                     <li class="{% block nav_penjadwalan %}{% endblock %}"><a href="{{ url_for('penjadwalan') }}">Penjadwalan</a></li>
-                    <li class=""><a href="/admin/">Admin</a></li>
                     <li class="{% block nav_setting %}{% endblock %}"><a href="{{ url_for('setting') }}">Pengaturan Proses</a></li>
+                    <li class=""><a href="/admin/">Admin</a></li>
                     <li><a href="{{ url_for('logout') }}">Logout</a></li>
                 {% else %}
                     <li class="{% block nav_login %}{% endblock %}"><a href="{{ url_for('login') }}">Login</a></li>

@@ -330,12 +330,7 @@ def setting():
     min_bidan_form = MinBidanForm(data=min_bidan_data)
     proses_algo_form = ProsesAlgoForm(data=proses_algo_data)
     if request.method == 'POST':
-        if 'section_min_bidan' in request.form:
-            min_bidan_form = MinBidanForm(request.form)
-            if min_bidan_form.validate():
-                schedulling_setting("set", {"section": 'min_bidan', "data": request.form})
-                flash('Batasan penjadwalan berhasil diubah.', 'success')
-        elif 'section_proses_algo' in request.form:
+        if 'section_proses_algo' in request.form:
             proses_algo_form = ProsesAlgoForm(request.form)
             if proses_algo_form.validate():
                 schedulling_setting("set", {"section": 'memetika', "data": request.form})
