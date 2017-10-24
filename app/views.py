@@ -203,6 +203,7 @@ def penjadwalan_proses(slug):
 
         if request.method == 'POST':
             if request.json:
+
                 if request.json['ajax'] == 'generate-jadwal':
                     with open("scheduling_process.txt", "wb") as fo:
                         fo.write("true")
@@ -228,12 +229,15 @@ def penjadwalan_proses(slug):
                             break
                     meme.detail_solusi()
                     return json.dumps({'status': 'OK'})
+
                 elif request.json['ajax'] == 'stop-generate-jadwal':
                     with open("scheduling_process.txt", "wb") as fo:
                         fo.write("false")
+
                 elif request.json['ajax'] == 'get-rest-shift':
                     rest_req = shift_list(table_query.filter(Schedules.id == request.json['schedule_id']).all())
                     return json.dumps({'status': 'OK', 'days': days, 'res_data': rest_req})
+
                 elif request.json['ajax'] == 'generate-rest-jadwal':
                     result = generate_pattern_schedule(periode_date, days)
                     if result:
@@ -241,6 +245,7 @@ def penjadwalan_proses(slug):
                     else:
                         flash('Rest jadwal gagal digenerate, acuan jadwal tidak ditemukan.', 'danger')
                     return json.dumps({'status': 'OK'})
+
                 elif request.json['ajax'] == 'clears-schedule':
                     current_schedule = Schedules.query.filter(Schedules.periode_id == periode_db.id).all()
                     if request.json['schedule']:
@@ -253,11 +258,10 @@ def penjadwalan_proses(slug):
                     db.session.commit()
                     flash('Jadwal berhasil dibersihkan.', 'success')
                     return json.dumps({'status': 'OK'})
+
                 elif request.json['ajax'] == 'get-detail-min-bidan':
                     hari = int(request.json['hari'])
-                    pagi = []
-                    siang = []
-                    malam = []
+                    pagi, siang, malam = [], [], []
                     current_schedule = table_query.all()
                     for sch in current_schedule:
                         if sch.shift != "":

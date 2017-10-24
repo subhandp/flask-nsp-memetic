@@ -378,14 +378,20 @@ class Memetic():
                     elif shift == "S":
                         malam, off, pagi = 0, 0, 0
                         if siang == 0:
-                            
-                            if nextshift == "O":
-                                if process == "fitness":
-                                    pelanggaran_off_siang += 1
-                                elif process == "improvement":
-                                    individu[id][hari + 1] = "P"
+                            if nextrestshift is not None and next2restshift is not None and immutable_shift is None:
+                                if nextrestshift == "S" and next2restshift == "S":
+                                    if process == "fitness":
+                                        pelanggaran_off_siang += 1
+                                    elif process == "improvement":
+                                        individu[id] = self.replace_shift(individu[id], hari, 1)
                             else:
-                                siang += 1
+                                if nextshift == "O":
+                                    if process == "fitness":
+                                        pelanggaran_off_siang += 1
+                                    elif process == "improvement":
+                                        individu[id][hari + 1] = "P"
+                                else:
+                                    siang += 1
                         elif siang == 1:
                             if nextrestshift is not None and immutable_shift is None:
                                 if process == "fitness":
