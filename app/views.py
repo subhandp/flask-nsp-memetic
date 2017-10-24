@@ -243,9 +243,13 @@ def penjadwalan_proses(slug):
                     return json.dumps({'status': 'OK'})
                 elif request.json['ajax'] == 'clears-schedule':
                     current_schedule = Schedules.query.filter(Schedules.periode_id == periode_db.id).all()
-                    for sch in current_schedule:
-                        sch.shift = ""
-                        sch.rest_shift = "CLEAR"
+                    if request.json['schedule']:
+                        for sch in current_schedule:
+                            sch.shift = ""
+                    if request.json['rest_schedule']:
+                        for sch in current_schedule:
+                            sch.rest_shift = ""
+
                     db.session.commit()
                     flash('Jadwal berhasil dibersihkan.', 'success')
                     return json.dumps({'status': 'OK'})
