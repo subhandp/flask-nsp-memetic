@@ -36,8 +36,9 @@ class Memetic():
 
     def detail_solusi(self):
         print "FITNESS TERTINGGI: %f" % (self.elit_individu["fitness"])
-        self.print_individu(self.elit_individu["individu"])
         self.single_fitness(self.elit_individu["individu"], True)
+        # self.print_individu(self.elit_individu["individu"])
+        # self.single_fitness(self.elit_individu["individu"], True)
 
 
     def print_individu(self, individu):
@@ -193,6 +194,14 @@ class Memetic():
 
             if process == "fitness":
                 total_pelanggaran += pelanggaran
+
+            if debug:
+                if pelanggaran > 0:
+                    print "[MIN BIDAN] PELANGGARAN hari - %d" % (hari)
+                    print "Pelanggaran: %d" % (pelanggaran)
+
+        if debug:
+            print "[MIN BIDAN] Total pelanggaran: %d" % (total_pelanggaran)
 
         if process == "fitness":
             return total_pelanggaran
@@ -468,11 +477,16 @@ class Memetic():
                 pelanggaran_total += pelanggaran_off_malam + pelanggaran_off_siang + pelanggaran_off_day + pelanggaran_off
 
                 if debug:
-                    print "[DAY OFF] PELANGGARAN BIDAN - %d" % (id)
-                    print "---S = %d" % (pelanggaran_off_siang)
-                    print "---M = %d" % (pelanggaran_off_malam)
-                    print "---Off Day = %d" % (pelanggaran_off_day)
-                    print "Off day kelebihan = %d" % (pelanggaran_off)
+                    if pelanggaran_off > 0 or pelanggaran_off_day > 0 or pelanggaran_off_malam > 0 or pelanggaran_off_siang > 0:
+                        print "[DAY OFF] PELANGGARAN BIDAN - %d" % (id)
+                    if pelanggaran_off_siang > 0:
+                        print "---S = %d" % (pelanggaran_off_siang)
+                    if pelanggaran_off_malam > 0:
+                        print "---M = %d" % (pelanggaran_off_malam)
+                    if pelanggaran_off_day > 0:
+                        print "---Off Day = %d" % (pelanggaran_off_day)
+                    if pelanggaran_off > 0:
+                        print "Off day kelebihan = %d" % (pelanggaran_off)
 
         if debug:
             print "[DAY OFF] Total Pelanggaran: %d" % (pelanggaran_total)
@@ -489,6 +503,7 @@ class Memetic():
         pelanggaran_total = 0
         for id, bdn_w_sch in self.bidan_w_schedule.items():
             pelanggaran, pair_shift_malam, pair_shift_siang = 0, 0, 0
+            pelanggaran_pola_malam = 0
             malam, siang = 0, 0
             h = 0
             pair_patteran_malam = []
@@ -551,7 +566,7 @@ class Memetic():
 
             if len(pair_patteran_malam) > 3:
                 if process == "fitness":
-                    pelanggaran += 1
+                    pelanggaran_pola_malam += 1
                 elif process == "improvement":
                     generate_shift = self.generate_random_shift(2)
                     rand_index = random.randint(0, len(pair_patteran_malam)-1)
@@ -564,10 +579,14 @@ class Memetic():
 
 
             if debug:
-                print "[PAIR SHIFT] PELANGGARAN BIDAN - %d" % (id)
-                print "Pelanggaran: %d" % (pelanggaran)
+                if pelanggaran > 0 or pelanggaran_pola_malam > 0:
+                    print "[PAIR SHIFT] PELANGGARAN BIDAN - %d" % (id)
+                if pelanggaran > 0:
+                    print "Pelanggaran pair shift: %d" % (pelanggaran)
+                if pelanggaran_pola_malam > 0:
+                    print "Pelanggaran pola malam: %d" % (pelanggaran_pola_malam)
 
-            pelanggaran_total += pelanggaran
+            pelanggaran_total += pelanggaran + pelanggaran_pola_malam
 
         if debug:
             print "[PAIR SHIFT] TOTAL PELANGGARAN: %d" % (pelanggaran_total)
@@ -614,7 +633,16 @@ class Memetic():
                     elif process == "improvement":
                         individu[id] = self.generate_random_shift()
 
-            pelanggaran_total = pelanggaran_total + pelanggaran
+            pelanggaran_total += pelanggaran
+
+            if debug:
+                if pelanggaran > 0:
+                    print "[WORKING HOURS] PELANGGARAN BIDAN - %d" % (id)
+                    print "Pelanggaran: %d" % (pelanggaran)
+
+
+        if debug:
+            print "[WORKING HOURS] TOTAL PELANGGARAN: %d" % (pelanggaran_total)
 
         if process == "fitness":
             return pelanggaran_total
@@ -631,7 +659,7 @@ class Memetic():
             fitness = 0
             fitness += self.min_bidan(individu, "fitness") * self.hard_penalti
             fitness += self.day_off(individu, "fitness") * self.hard_penalti
-            fitness += self.pairshift_overflow(individu) * self.soft_penalti
+            fitness += self.pairshift_overflow(individu, "fitness") * self.soft_penalti
             fitness += self.working_hours(individu, "fitness") * self.hard_penalti
             normalisasi_fitness = float(1) / (fitness+1)
             total_fitness += normalisasi_fitness
@@ -656,10 +684,10 @@ class Memetic():
 
     def single_fitness(self, individu, debug=False):
 
-        self.temp_total_pelanggaran["min_bidan"] = self.min_bidan(individu, "fitness")
-        self.temp_total_pelanggaran["day_off"] = self.day_off(individu, "fitness")
-        self.temp_total_pelanggaran["pairshift"] = self.pairshift_overflow(individu)
-        self.temp_total_pelanggaran["working_hours"] = self.working_hours(individu, "fitness")
+        self.temp_total_pelanggaran["min_bidan"] = self.min_bidan(individu, "fitness", debug)
+        self.temp_total_pelanggaran["day_off"] = self.day_off(individu, "fitness", debug)
+        self.temp_total_pelanggaran["pairshift"] = self.pairshift_overflow(individu, "fitness", debug)
+        self.temp_total_pelanggaran["working_hours"] = self.working_hours(individu, "fitness", debug)
 
         fitness = 0
         fitness += self.temp_total_pelanggaran["min_bidan"] * self.hard_penalti
@@ -780,12 +808,11 @@ class Memetic():
 
 
     def elitist(self):
-        # 'key' adalah pembanding fungsi max()
-        # 'itemgetter(1)' mengambil index 1 dari 'enumerate' sebagai pembanding
-        index, value = max(enumerate(self.lingkungan_individu_fitness), key=operator.itemgetter(1))
-        if self.elit_individu["fitness"] < value:
-            self.elit_individu["fitness"] = value
-            self.elit_individu["individu"] = self.lingkungan_individu[index]
+        for i,fit in enumerate(self.lingkungan_individu_fitness):
+            if fit > self.elit_individu["fitness"]:
+                self.elit_individu["fitness"] = fit
+                self.elit_individu["individu"] = self.lingkungan_individu[i]
+
         #REMOVE WORSE INDIVIDU
         total_remove = len(self.lingkungan_individu_fitness) - self.populasi
         total_remove += self.elit_individu["total_elit"]
@@ -797,6 +824,7 @@ class Memetic():
 
         for i in range(self.elit_individu["total_elit"]):
             self.lingkungan_individu.append(self.elit_individu["individu"])
+            self.lingkungan_individu_fitness.append(self.elit_individu["fitness"])
 
 
     def population_replacement(self):
@@ -804,6 +832,7 @@ class Memetic():
         self.temp_lingkungan_individu = []
         self.fitness()
         self.elitist()
+
         # print(json.dumps(self.elit_individu, indent=4, sort_keys=False))
 
     def termination(self, generasi):
@@ -813,10 +842,14 @@ class Memetic():
         for key, total in self.temp_total_pelanggaran.items():
             totalp += total
 
+        end_time = datetime.now()
+        elapsed = str(format(end_time - self.start_time))
+
         print "%d. %f" % (generasi, elit_fitness)
         print "Total Pelanggaran: %d" % totalp
         for jenis, total in self.temp_total_pelanggaran.items():
             print "---%s: %d" % (jenis, total)
+        print "Waktu: %s" % elapsed
         print " "
 
         min_fitness = min(self.lingkungan_individu_fitness)
@@ -827,19 +860,23 @@ class Memetic():
         msg = ""
         if scheduling_process == "false":
             print "PROSESS STOPED FROM CLIENT"
+            print " "
             msg = "Stopped from client"
         elif min_fitness == max_fitness:
             print "TERMINASI TERPENUHI - KONVERGENSI FITNESS"
+            print " "
             msg = "Konvergensi fitness"
             with open("scheduling_process.txt", "wb") as fo:
                 fo.write("false")
         elif self.elit_individu["fitness"] == 1:
             print "TERMINASI TERPENUHI - TIDAK ADA PELANGGARAN"
+            print " "
             msg = "Fitness sempurna"
         elif generasi < self.generasi-1:
             return {"stop": False}
         elif generasi == self.generasi-1:
             print "TERMINASI TERPENUHI - MAKSIMAL GENERASI TERCAPAI"
+            print " "
             msg = "Maksimal generasi tercapai"
             with open("scheduling_process.txt", "wb") as fo:
                 fo.write("false")
