@@ -2,6 +2,7 @@ from app import db
 from models import Schedules, Bidan, Periode
 import random, operator, json
 import timeit
+import copy
 from datetime import datetime
 
 class Memetic():
@@ -277,8 +278,6 @@ class Memetic():
         for s in shift_generate:
             individu_row[hari] = s
             hari += 1
-        return individu_row
-
 
 
     def day_off(self, individu, process="fitness", debug=False):
@@ -366,7 +365,7 @@ class Memetic():
                                 if process == "fitness":
                                     pelanggaran_off_day += 1
                                 elif process == "improvement":
-                                    individu[id] = self.replace_shift(individu[id], hari, 4)
+                                    self.replace_shift(individu[id], hari, 4)
                                 pagi = 0
                             elif nextshift != "O" and nextshift != "E":
                                 if process == "fitness":
@@ -392,7 +391,7 @@ class Memetic():
                                     if process == "fitness":
                                         pelanggaran_off_siang += 1
                                     elif process == "improvement":
-                                        individu[id] = self.replace_shift(individu[id], hari, 1)
+                                        self.replace_shift(individu[id], hari, 1)
                             else:
                                 if nextshift == "O":
                                     if process == "fitness":
@@ -406,7 +405,7 @@ class Memetic():
                                 if process == "fitness":
                                     pelanggaran_off_siang += 1
                                 elif process == "improvement":
-                                    individu[id] = self.replace_shift(individu[id], hari, 2)
+                                    self.replace_shift(individu[id], hari, 2)
 
                             elif nextshift != "O" and nextshift != "E":
 
@@ -430,7 +429,7 @@ class Memetic():
                                 if process == "fitness":
                                     pelanggaran_off_malam += 1
                                 elif process == "improvement":
-                                    individu[id] = self.replace_shift(individu[id], hari, 1)
+                                    self.replace_shift(individu[id], hari, 1)
                             else:
                                 malam += 1
                                 if process == "fitness":
@@ -448,7 +447,7 @@ class Memetic():
                                 if process == "fitness":
                                     pelanggaran_off_malam += 1
                                 elif process == "improvement":
-                                    individu[id] = self.replace_shift(individu[id], hari, 2)
+                                    self.replace_shift(individu[id], hari, 2)
 
                             elif nextshift != "O" and nextshift != "E":
                                 if process == "fitness":
@@ -460,7 +459,7 @@ class Memetic():
                                 if process == "fitness":
                                     pelanggaran_off_malam += 1
                                 elif process == "improvement":
-                                    individu[id] = self.replace_shift(individu[id], hari, 3)
+                                    self.replace_shift(individu[id], hari, 3)
 
                             elif next2shift != "O" and next2shift != "E":
                                 if process == "fitness":
@@ -540,7 +539,7 @@ class Memetic():
                                 if process == "fitness":
                                     pelanggaran += 1
                                 elif process == "improvement":
-                                    individu[id] = self.replace_shift(individu[id], hari, 7)
+                                    self.replace_shift(individu[id], hari, 7)
 
                             malam = 0
                     elif shift == "S":
@@ -553,7 +552,7 @@ class Memetic():
                                 if process == "fitness":
                                     pelanggaran += 1
                                 elif process == "improvement":
-                                    individu[id] = self.replace_shift(individu[id], hari, 7)
+                                    self.replace_shift(individu[id], hari, 7)
                             siang = 0
                     else:
                         malam = 0
@@ -601,7 +600,7 @@ class Memetic():
     def working_hours(self, individu, process="fitness", debug=False):
         pelanggaran_total = 0
         p, s, m = 6, 7, 11
-        min_hours = 120
+        min_hours = 160
         max_hours = 192
         for id, bdn_w_sch in self.bidan_w_schedule.items():
             pelanggaran = 0
@@ -712,8 +711,6 @@ class Memetic():
             parent1 = self.roulette_wheel(random.uniform(0, 1))
             parent2 = self.roulette_wheel(random.uniform(0, 1))
             self.parents_individu.append([parent1, parent2])
-        # print len(self.parents_individu)
-        # print(json.dumps(self.parents_individu, indent=4, sort_keys=False))
 
 
 
@@ -751,22 +748,46 @@ class Memetic():
 
 
     def mutation(self):
-        for individu_index in range(len(self.temp_lingkungan_individu)):
+
+        for individu in self.temp_lingkungan_individu:
             rand_value = random.uniform(0, 1)
+
             if rand_value <= self.probabilitas_mutasi:
                 kind = random.randint(0, 1)
+
                 if kind == 0:
-                    rand_col = random.randint(0, self.hari-1)
+                    rand_col = random.randint(0, self.hari - 1)
                     rand_col_val = ["P", "S", "M"]
-                    for id, individu in self.temp_lingkungan_individu[individu_index].items():
+
+                    for id, row in individu.items():
                         index_col = random.randint(0, len(rand_col_val) - 1)
                         mutation_col = rand_col_val[index_col]
-                        self.temp_lingkungan_individu[individu_index][id][rand_col] = mutation_col
+                        row[rand_col] = mutation_col
+
                 elif kind == 1:
-                    individu_id = self.temp_lingkungan_individu[individu_index].keys()
+                    individu_id = individu.keys()
                     rand_id = random.randint(0, len(individu_id) - 1)
                     id = individu_id[rand_id]
-                    self.temp_lingkungan_individu[individu_index][id] = self.generate_random_shift()
+                    individu[id] = self.generate_random_shift()
+
+
+    # def mutation(self):
+    #     for individu_index in range(len(self.temp_lingkungan_individu)):
+    #         rand_value = random.uniform(0, 1)
+    #         if rand_value <= self.probabilitas_mutasi:
+    #             kind = random.randint(0, 1)
+    #             if kind == 0:
+    #                 rand_col = random.randint(0, self.hari-1)
+    #                 rand_col_val = ["P", "S", "M"]
+    #                 for id, individu in self.temp_lingkungan_individu[individu_index].items():
+    #                     index_col = random.randint(0, len(rand_col_val) - 1)
+    #                     mutation_col = rand_col_val[index_col]
+    #                     self.temp_lingkungan_individu[individu_index][id][rand_col] = mutation_col
+    #             elif kind == 1:
+    #                 individu_id = self.temp_lingkungan_individu[individu_index].keys()
+    #                 rand_id = random.randint(0, len(individu_id) - 1)
+    #                 id = individu_id[rand_id]
+    #                 self.temp_lingkungan_individu[individu_index][id] = self.generate_random_shift()
 
 
     def local_search(self):
@@ -774,66 +795,41 @@ class Memetic():
                 rand_value = random.uniform(0, 1)
                 if rand_value < self.probabilitas_local_search:
                     individu = self.temp_lingkungan_individu[index]
-                    current_fitness = self.single_fitness(individu)
 
-                    individu_improvement = self.pairshift_overflow(individu, "improvement")
-                    fitness_improvement = self.single_fitness(individu_improvement)
+                    self.pairshift_overflow(individu, "improvement")
 
-                    if fitness_improvement > current_fitness:
-                        individu = individu_improvement
-                        current_fitness = fitness_improvement
+                    self.working_hours(individu, "improvement")
 
-                    individu_improvement = self.working_hours(individu, "improvement")
-                    fitness_improvement = self.single_fitness(individu_improvement)
+                    self.min_bidan(individu, "improvement")
 
-                    if fitness_improvement > current_fitness:
-                        individu = individu_improvement
-                        current_fitness = fitness_improvement
+                    self.day_off(individu, "improvement")
 
-                    individu_improvement = self.min_bidan(individu, "improvement")
-                    fitness_improvement = self.single_fitness(individu_improvement)
-
-                    if fitness_improvement > current_fitness:
-                        individu = individu_improvement
-                        current_fitness = fitness_improvement
-
-                    individu_improvement = self.day_off(individu, "improvement")
-                    fitness_improvement = self.single_fitness(individu_improvement)
-
-                    if fitness_improvement > current_fitness:
-                        individu = individu_improvement
-                        current_fitness = fitness_improvement
-
-                    self.temp_lingkungan_individu[index] = individu
 
 
     def elitist(self):
-        for i,fit in enumerate(self.lingkungan_individu_fitness):
-            if fit > self.elit_individu["fitness"]:
-                self.elit_individu["fitness"] = fit
-                self.elit_individu["individu"] = self.lingkungan_individu[i]
+        i, value = max(enumerate(self.lingkungan_individu_fitness), key=operator.itemgetter(1))
+        if value > self.elit_individu["fitness"]:
+            self.elit_individu["fitness"] = value
+            self.elit_individu["individu"] = copy.deepcopy(self.lingkungan_individu[i])
 
-        #REMOVE WORSE INDIVIDU
-        total_remove = len(self.lingkungan_individu_fitness) - self.populasi
-        total_remove += self.elit_individu["total_elit"]
 
-        for i in range(total_remove):
+        for i in range(self.elit_individu["total_elit"]):
             index, value = min(enumerate(self.lingkungan_individu_fitness), key=operator.itemgetter(1))
             del self.lingkungan_individu[index]
             del self.lingkungan_individu_fitness[index]
 
         for i in range(self.elit_individu["total_elit"]):
-            self.lingkungan_individu.append(self.elit_individu["individu"])
-            self.lingkungan_individu_fitness.append(self.elit_individu["fitness"])
+            elit = copy.deepcopy(self.elit_individu["individu"])
+            self.lingkungan_individu.append(elit)
 
 
     def population_replacement(self):
+        del self.lingkungan_individu[:]
         self.lingkungan_individu = self.temp_lingkungan_individu
         self.temp_lingkungan_individu = []
         self.fitness()
         self.elitist()
 
-        # print(json.dumps(self.elit_individu, indent=4, sort_keys=False))
 
     def termination(self, generasi):
 
@@ -846,6 +842,7 @@ class Memetic():
         elapsed = str(format(end_time - self.start_time))
 
         print "%d. %f" % (generasi, elit_fitness)
+        print "----%d. %f" % (generasi, self.elit_individu["fitness"])
         print "Total Pelanggaran: %d" % totalp
         for jenis, total in self.temp_total_pelanggaran.items():
             print "---%s: %d" % (jenis, total)
