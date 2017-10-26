@@ -3,11 +3,12 @@ from models import Schedules, Bidan, Periode
 import random, operator, json
 import timeit
 import copy
+import cPickle
 from datetime import datetime
 
 class Memetic():
     shift = [['P'], ['S'], ['M']]
-    #shift = [['P','P','P'], ['S','S','O'], ['M','M','O','O']]
+    # shift = [['P','P','P'], ['S','S','O'], ['M','M','O','O']]
     hard_penalti = 5
     soft_penalti = 1
 
@@ -116,7 +117,6 @@ class Memetic():
 
             self.lingkungan_individu.append(individu)
 
-        #self.print_individu(self.lingkungan_individu[0])
 
 
     def min_bidan_shift_count(self, individu, hari):
@@ -206,8 +206,7 @@ class Memetic():
 
         if process == "fitness":
             return total_pelanggaran
-        elif process == "improvement":
-            return individu
+
 
 
     def min_bidan_improve(self, individu, data):
@@ -267,9 +266,6 @@ class Memetic():
                             total_need = total_need - 1
                             if total_need <= 0:
                                 improve = False
-
-        return individu
-
 
 
     def replace_shift(self, individu_row, hari, length_shift):
@@ -492,8 +488,6 @@ class Memetic():
 
         if process == "fitness":
             return pelanggaran_total
-        elif process == "improvement":
-            return individu
 
 
 
@@ -592,8 +586,6 @@ class Memetic():
 
         if process == "fitness":
             return pelanggaran_total
-        elif process == "improvement":
-            return individu
 
 
 
@@ -645,8 +637,6 @@ class Memetic():
 
         if process == "fitness":
             return pelanggaran_total
-        elif process == "improvement":
-            return individu
 
 
 
@@ -708,10 +698,13 @@ class Memetic():
     def selection(self):
         self.parents_individu = []
         for i in range(len(self.lingkungan_individu)/2):
-            parent1 = self.roulette_wheel(random.uniform(0, 1))
-            parent2 = self.roulette_wheel(random.uniform(0, 1))
+            p1 = self.roulette_wheel(random.uniform(0, 1))
+            p2 = self.roulette_wheel(random.uniform(0, 1))
+            parent1 = copy.deepcopy(self.lingkungan_individu[p1])
+            parent2 = copy.deepcopy(self.lingkungan_individu[p2])
+            # parent1 = cPickle.loads(cPickle.dumps(self.lingkungan_individu[p1], -1))
+            # parent2 = cPickle.loads(cPickle.dumps(self.lingkungan_individu[p2], -1))
             self.parents_individu.append([parent1, parent2])
-
 
 
     def recombination(self):
@@ -725,11 +718,11 @@ class Memetic():
                 anak1, anak2 = {}, {}
 
 
-                for id, individu_row in self.lingkungan_individu[parent[0]].items():
+                for id, individu_row in parent[0].items():
                     parent1["slice1"].append(individu_row[0:rand_col])
                     parent1["slice2"].append(individu_row[rand_col:])
 
-                for id, individu_row in self.lingkungan_individu[parent[1]].items():
+                for id, individu_row in parent[1].items():
                     parent2["slice1"].append(individu_row[0:rand_col])
                     parent2["slice2"].append(individu_row[rand_col:])
 
@@ -743,8 +736,8 @@ class Memetic():
                 self.temp_lingkungan_individu.append(anak1)
                 self.temp_lingkungan_individu.append(anak2)
             else:
-                self.temp_lingkungan_individu.append(self.lingkungan_individu[parent[0]])
-                self.temp_lingkungan_individu.append(self.lingkungan_individu[parent[1]])
+                self.temp_lingkungan_individu.append(parent[0])
+                self.temp_lingkungan_individu.append(parent[1])
 
 
     def mutation(self):
@@ -757,7 +750,7 @@ class Memetic():
 
                 if kind == 0:
                     rand_col = random.randint(0, self.hari - 1)
-                    rand_col_val = ["P", "S", "M"]
+                    rand_col_val = ["P", "S", "M", "O"]
 
                     for id, row in individu.items():
                         index_col = random.randint(0, len(rand_col_val) - 1)
@@ -771,28 +764,11 @@ class Memetic():
                     individu[id] = self.generate_random_shift()
 
 
-    # def mutation(self):
-    #     for individu_index in range(len(self.temp_lingkungan_individu)):
-    #         rand_value = random.uniform(0, 1)
-    #         if rand_value <= self.probabilitas_mutasi:
-    #             kind = random.randint(0, 1)
-    #             if kind == 0:
-    #                 rand_col = random.randint(0, self.hari-1)
-    #                 rand_col_val = ["P", "S", "M"]
-    #                 for id, individu in self.temp_lingkungan_individu[individu_index].items():
-    #                     index_col = random.randint(0, len(rand_col_val) - 1)
-    #                     mutation_col = rand_col_val[index_col]
-    #                     self.temp_lingkungan_individu[individu_index][id][rand_col] = mutation_col
-    #             elif kind == 1:
-    #                 individu_id = self.temp_lingkungan_individu[individu_index].keys()
-    #                 rand_id = random.randint(0, len(individu_id) - 1)
-    #                 id = individu_id[rand_id]
-    #                 self.temp_lingkungan_individu[individu_index][id] = self.generate_random_shift()
-
 
     def local_search(self):
         for index in range(len(self.temp_lingkungan_individu)):
                 rand_value = random.uniform(0, 1)
+
                 if rand_value < self.probabilitas_local_search:
                     individu = self.temp_lingkungan_individu[index]
 
