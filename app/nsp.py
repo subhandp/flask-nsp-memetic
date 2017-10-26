@@ -698,10 +698,10 @@ class Memetic():
     def selection(self):
         self.parents_individu = []
         for i in range(len(self.lingkungan_individu)/2):
-            p1 = self.roulette_wheel(random.uniform(0, 1))
-            p2 = self.roulette_wheel(random.uniform(0, 1))
-            parent1 = copy.deepcopy(self.lingkungan_individu[p1])
-            parent2 = copy.deepcopy(self.lingkungan_individu[p2])
+            parent1 = self.roulette_wheel(random.uniform(0, 1))
+            parent2 = self.roulette_wheel(random.uniform(0, 1))
+            # parent1 = copy.deepcopy(self.lingkungan_individu[p1])
+            # parent2 = copy.deepcopy(self.lingkungan_individu[p2])
             # parent1 = cPickle.loads(cPickle.dumps(self.lingkungan_individu[p1], -1))
             # parent2 = cPickle.loads(cPickle.dumps(self.lingkungan_individu[p2], -1))
             self.parents_individu.append([parent1, parent2])
@@ -718,11 +718,11 @@ class Memetic():
                 anak1, anak2 = {}, {}
 
 
-                for id, individu_row in parent[0].items():
+                for id, individu_row in self.lingkungan_individu[parent[0]].items():
                     parent1["slice1"].append(individu_row[0:rand_col])
                     parent1["slice2"].append(individu_row[rand_col:])
 
-                for id, individu_row in parent[1].items():
+                for id, individu_row in self.lingkungan_individu[parent[1]].items():
                     parent2["slice1"].append(individu_row[0:rand_col])
                     parent2["slice2"].append(individu_row[rand_col:])
 
@@ -733,16 +733,13 @@ class Memetic():
                         anak2[id] = parent2["slice1"][index] + parent1["slice2"][index]
                         index += 1
 
-                self.temp_lingkungan_individu.append(anak1)
-                self.temp_lingkungan_individu.append(anak2)
-            else:
-                self.temp_lingkungan_individu.append(parent[0])
-                self.temp_lingkungan_individu.append(parent[1])
+                self.lingkungan_individu.append(anak1)
+                self.lingkungan_individu.append(anak2)
 
 
     def mutation(self):
 
-        for individu in self.temp_lingkungan_individu:
+        for individu in self.lingkungan_individu:
             rand_value = random.uniform(0, 1)
 
             if rand_value <= self.probabilitas_mutasi:
@@ -766,20 +763,17 @@ class Memetic():
 
 
     def local_search(self):
-        for index in range(len(self.temp_lingkungan_individu)):
-                rand_value = random.uniform(0, 1)
+        for individu in self.lingkungan_individu:
+            rand_value = random.uniform(0, 1)
 
-                if rand_value < self.probabilitas_local_search:
-                    individu = self.temp_lingkungan_individu[index]
+            if rand_value < self.probabilitas_local_search:
+                self.pairshift_overflow(individu, "improvement")
 
-                    self.pairshift_overflow(individu, "improvement")
+                self.working_hours(individu, "improvement")
 
-                    self.working_hours(individu, "improvement")
+                self.min_bidan(individu, "improvement")
 
-                    self.min_bidan(individu, "improvement")
-
-                    self.day_off(individu, "improvement")
-
+                self.day_off(individu, "improvement")
 
 
     def elitist(self):
@@ -788,21 +782,19 @@ class Memetic():
             self.elit_individu["fitness"] = value
             self.elit_individu["individu"] = copy.deepcopy(self.lingkungan_individu[i])
 
+        total_remove = len(self.lingkungan_individu) - self.populasi
+        total_remove += 1
 
-        for i in range(self.elit_individu["total_elit"]):
+        for i in range(total_remove):
             index, value = min(enumerate(self.lingkungan_individu_fitness), key=operator.itemgetter(1))
             del self.lingkungan_individu[index]
             del self.lingkungan_individu_fitness[index]
 
-        for i in range(self.elit_individu["total_elit"]):
-            elit = copy.deepcopy(self.elit_individu["individu"])
-            self.lingkungan_individu.append(elit)
+        elit = copy.deepcopy(self.elit_individu["individu"])
+        self.lingkungan_individu.append(elit)
 
 
     def population_replacement(self):
-        del self.lingkungan_individu[:]
-        self.lingkungan_individu = self.temp_lingkungan_individu
-        self.temp_lingkungan_individu = []
         self.fitness()
         self.elitist()
 
