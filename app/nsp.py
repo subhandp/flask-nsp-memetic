@@ -20,7 +20,7 @@ class Memetic():
         self.temp_lingkungan_individu = []
         self.lingkungan_individu_fitness = []
         self.lingkungan_individu_fitness_interval = []
-        self.elit_individu = {"fitness": 0, "individu": None, "total_elit": 2}
+        self.elit_individu = {"fitness": 0, "individu": None}
         self.temp_total_pelanggaran = {"min_bidan": 0, "day_off": 0, "pairshift": 0, "working_hours": 0}
         self.min_jenis_shift = {
             "shift_pagi": {"sn": int(init_data["shift_pagi_sn"]), "jr": int(init_data["shift_pagi_jr"])},
@@ -592,7 +592,7 @@ class Memetic():
     def working_hours(self, individu, process="fitness", debug=False):
         pelanggaran_total = 0
         p, s, m = 6, 7, 11
-        min_hours = 160
+        min_hours = 120
         max_hours = 192
         for id, bdn_w_sch in self.bidan_w_schedule.items():
             pelanggaran = 0
@@ -645,12 +645,7 @@ class Memetic():
         self.lingkungan_individu_fitness_interval = []
         total_fitness = 0
         for individu in self.lingkungan_individu:
-            fitness = 0
-            fitness += self.min_bidan(individu, "fitness") * self.hard_penalti
-            fitness += self.day_off(individu, "fitness") * self.hard_penalti
-            fitness += self.pairshift_overflow(individu, "fitness") * self.soft_penalti
-            fitness += self.working_hours(individu, "fitness") * self.hard_penalti
-            normalisasi_fitness = float(1) / (fitness+1)
+            normalisasi_fitness = self.single_fitness(individu)
             total_fitness += normalisasi_fitness
             self.lingkungan_individu_fitness.append(normalisasi_fitness)
 
@@ -690,7 +685,7 @@ class Memetic():
     def roulette_wheel(self, rand_number):
         index = 0
         for fitness in self.lingkungan_individu_fitness_interval:
-            if rand_number >= fitness["awal"] and rand_number <= fitness["batas"]:
+            if rand_number > fitness["awal"] and rand_number <= fitness["batas"]:
                 return index
             index += 1
 
@@ -698,16 +693,15 @@ class Memetic():
     def selection(self):
         self.parents_individu = []
         for i in range(len(self.lingkungan_individu)/2):
-            parent1 = self.roulette_wheel(random.uniform(0, 1))
-            parent2 = self.roulette_wheel(random.uniform(0, 1))
-            # parent1 = copy.deepcopy(self.lingkungan_individu[p1])
-            # parent2 = copy.deepcopy(self.lingkungan_individu[p2])
-            # parent1 = cPickle.loads(cPickle.dumps(self.lingkungan_individu[p1], -1))
-            # parent2 = cPickle.loads(cPickle.dumps(self.lingkungan_individu[p2], -1))
+            p1 = self.roulette_wheel(random.uniform(0, 1))
+            p2 = self.roulette_wheel(random.uniform(0, 1))
+            parent1 = copy.deepcopy(self.lingkungan_individu[p1])
+            parent2 = copy.deepcopy(self.lingkungan_individu[p2])
             self.parents_individu.append([parent1, parent2])
 
 
     def recombination(self):
+        temp_linkungan_individu = []
         for parent in self.parents_individu:
             rand_val = random.uniform(0, 1)
             if rand_val <= self.probabilitas_rekombinasi:
@@ -718,11 +712,11 @@ class Memetic():
                 anak1, anak2 = {}, {}
 
 
-                for id, individu_row in self.lingkungan_individu[parent[0]].items():
+                for id, individu_row in parent[0].items():
                     parent1["slice1"].append(individu_row[0:rand_col])
                     parent1["slice2"].append(individu_row[rand_col:])
 
-                for id, individu_row in self.lingkungan_individu[parent[1]].items():
+                for id, individu_row in parent[1].items():
                     parent2["slice1"].append(individu_row[0:rand_col])
                     parent2["slice2"].append(individu_row[rand_col:])
 
@@ -733,8 +727,14 @@ class Memetic():
                         anak2[id] = parent2["slice1"][index] + parent1["slice2"][index]
                         index += 1
 
-                self.lingkungan_individu.append(anak1)
-                self.lingkungan_individu.append(anak2)
+                temp_linkungan_individu.append(anak1)
+                temp_linkungan_individu.append(anak2)
+            else:
+                temp_linkungan_individu.append(parent[0])
+                temp_linkungan_individu.append(parent[1])
+
+        del self.lingkungan_individu[:]
+        self.lingkungan_individu = temp_linkungan_individu
 
 
     def mutation(self):
