@@ -8,7 +8,7 @@ from datetime import datetime
 
 class Memetic():
     shift = [['P'], ['S'], ['M']]
-    # shift = [['P','P','P'], ['S','S','O'], ['M','M','O','O']]
+    #shift = [['P','P','P','P','O'], ['S','S','O'], ['M','M','O','O']]
     hard_penalti = 5
     soft_penalti = 1
 
@@ -743,22 +743,12 @@ class Memetic():
             rand_value = random.uniform(0, 1)
 
             if rand_value <= self.probabilitas_mutasi:
-                kind = random.randint(0, 1)
-
-                if kind == 0:
-                    rand_col = random.randint(0, self.hari - 1)
-                    rand_col_val = ["P", "S", "M", "O"]
-
-                    for id, row in individu.items():
-                        index_col = random.randint(0, len(rand_col_val) - 1)
-                        mutation_col = rand_col_val[index_col]
-                        row[rand_col] = mutation_col
-
-                elif kind == 1:
-                    individu_id = individu.keys()
+                individu_id = individu.keys()
+                for i in range(2):
                     rand_id = random.randint(0, len(individu_id) - 1)
                     id = individu_id[rand_id]
                     individu[id] = self.generate_random_shift()
+
 
 
 

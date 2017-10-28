@@ -58,7 +58,7 @@ def first_data():
     n.append(Schedules(bidan_id=7, periode_id=1, shift='O,S,O,P,P,P,P,P,O,P,M,M,O,O,P,P,P,P,O,P,P,M,M,O,O,P,P,P,P,P'))
     n.append(Schedules(bidan_id=8, periode_id=1, shift='O,O,P,P,P,O,S,S,S,O,M,M,O,O,P,P,O,S,P,P,O,P,P,O,M,M,O,O,P,S'))
     n.append(Schedules(bidan_id=9, periode_id=1, shift='O,O,P,P,S,S,O,P,M,M,O,O,P,P,P,O,P,S,S,O,M,M,O,O,P,P,S,O,P,P'))
-    n.append(Schedules(bidan_id=10, periode_id=1, shift='O,O,P,P,YM,M,O,O,P,P,P,P,O,S,S,O,M,M,O,O,P,P,O,S,S,S,O,M,M'))
+    n.append(Schedules(bidan_id=10, periode_id=1, shift='O,O,P,P,M,M,O,O,P,P,P,P,O,S,S,O,M,M,O,O,P,P,O,S,S,S,O,P,M,M'))
 
     n.append(Schedules(bidan_id=11, periode_id=1, shift='O,O,O,P,P,P,P,P,P,O,P,P,P,P,P,P,O,P,P,P,P,P,P,O,P,P,P,P,P,P'))
     n.append(Schedules(bidan_id=12, periode_id=1, shift='O,O,O,P,P,P,P,P,P,O,P,P,P,P,P,P,O,P,P,P,P,P,P,O,P,P,P,P,P,P'))
