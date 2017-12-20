@@ -591,8 +591,8 @@ class Memetic():
 
     def working_hours(self, individu, process="fitness", debug=False):
         pelanggaran_total = 0
-        p, s, m = 6, 7, 11
-        min_hours = 120
+        p, s, m = 6,6,12
+        min_hours = 144
         max_hours = 192
         for id, bdn_w_sch in self.bidan_w_schedule.items():
             pelanggaran = 0
@@ -623,6 +623,7 @@ class Memetic():
                         pelanggaran = pelanggaran + 1
                     elif process == "improvement":
                         individu[id] = self.generate_random_shift()
+
 
             pelanggaran_total += pelanggaran
 
@@ -888,6 +889,7 @@ def generate_pattern_schedule(periode_date, days):
                 temp = "CLEAR"
             else:
                 index = len(shift) - 1
+                temp_static = "CLEAR"
                 if shift[index] == "P":
                     back = 0
                     pg = 0

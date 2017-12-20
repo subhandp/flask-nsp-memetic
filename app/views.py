@@ -26,7 +26,7 @@ def create_schedule_db(periode_date):
 
 def get_hours_total(temp_obj):
     total_jam_kerja = 0
-    p, s, m = 6, 7, 11
+    p, s, m = 6, 6, 12
     total_rest = 0
     if temp_obj['rest_shift'] is not None:
         total_rest = len(temp_obj['rest_shift'])
@@ -253,7 +253,7 @@ def penjadwalan_proses(slug):
                             sch.shift = ""
                     if request.json['rest_schedule']:
                         for sch in current_schedule:
-                            sch.rest_shift = ""
+                            sch.rest_shift = "CLEAR"
 
                     db.session.commit()
                     flash('Jadwal berhasil dibersihkan.', 'success')
