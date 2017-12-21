@@ -3,6 +3,9 @@
 {% block class_container %}container-fluid{% endblock %}
 {% block nav_penjadwalan %} active {% endblock %}
 {% block extra_styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='lib/fixedtable/css/defaultTheme.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='lib/fixedtable/css/myTheme.css')}}">
+
     <link rel="stylesheet" href="{{ url_for('static', filename='lib/datepicker/bootstrap-datepicker.standalone.css')}}">
     <style>
         .modal-dialog{
@@ -17,9 +20,17 @@
 {% endblock %}
 
 {% block extra_scripts %}
+    <script src="{{ url_for('static', filename='lib/fixedtable/jquery.fixedheadertable.js')}}"></script>
+
     <script src="{{ url_for('static', filename='lib/datepicker/bootstrap-datepicker.js')}}"></script>
     <script src="{{ url_for('static', filename='js/jquery.mask.js')}}"></script>
     <script>
+        $('#my-generate-jadwal').fixedHeaderTable({
+            footer: true,
+            cloneHeadToFoot: true,
+            height: 500,
+        });
+
     	$('.date-picker').datepicker({
 		  'format': 'MM-yyyy',
 		  startView: 'months',
@@ -229,9 +240,10 @@
                             var jd = "<h4>" + dns + data_dinas.length + " orang: </h4>";
                             $(".modal-body-min-bidan").append(jd);
                             for(i = 0; i < data_dinas.length; i++){
+                                var no = data_dinas[i].no;
                                 var nama = data_dinas[i].nama;
                                 var officer = "(" + data_dinas[i].officer + ")";
-                                $(".modal-body-min-bidan").append("<p>____"+officer+" - "+nama+"</p>");
+                                $(".modal-body-min-bidan").append("<p>__"+ "<strong>" + no + "</strong>. " + officer+" - "+nama+"</p>");
                             }
 
                         }
@@ -268,7 +280,7 @@
 
               {% if table %}
 
-                <table class="table table-bordered table-responsive">
+                <table class="fancyTable"  id="my-generate-jadwal">
                   <thead>
                     <tr>
                       <th>No</th>

@@ -263,26 +263,28 @@ def penjadwalan_proses(slug):
                     hari = int(request.json['hari'])
                     pagi, siang, malam = [], [], []
                     current_schedule = table_query.all()
+                    counter = 0
                     for sch in current_schedule:
-                        if sch.shift != "":
-                            temp_shift = sch.shift.split(",")
-                            t = {"officer": sch.officer, "nama": sch.name, "nip": sch.nip}
-                            if temp_shift[hari] == "P":
-                                pagi.append(t)
-                            elif temp_shift[hari] == "S":
-                                siang.append(t)
-                            elif temp_shift[hari] == "M":
-                                malam.append(t)
+                        counter += 1
+                        t = {"no":counter, "officer": sch.officer, "nama": sch.name, "nip": sch.nip}
+
+                        if sch.rest_shift != "CLEAR":
+                            temp_shift = sch.rest_shift.split(",")
+
+                            if temp_shift[hari] == "-":
+                                if sch.shift != "":
+                                    temp_shift = sch.shift.split(",")
                         else:
-                            if sch.rest_shift != "CLEAR":
-                                temp_shift = sch.rest_shift.split(",")
-                                t = {"officer": sch.officer, "nama": sch.name, "nip": sch.nip}
-                                if temp_shift[hari] == "P":
-                                    pagi.append(t)
-                                elif temp_shift[hari] == "S":
-                                    siang.append(t)
-                                elif temp_shift[hari] == "M":
-                                    malam.append(t)
+                            if sch.shift != "":
+                                temp_shift = sch.shift.split(",")
+
+                        if temp_shift[hari] == "P":
+                            pagi.append(t)
+                        elif temp_shift[hari] == "S":
+                            siang.append(t)
+                        elif temp_shift[hari] == "M":
+                            malam.append(t)
+
 
                     return json.dumps({'status': 'OK', 'pagi': pagi, 'siang': siang, 'malam': malam})
 
