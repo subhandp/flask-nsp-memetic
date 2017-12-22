@@ -26,7 +26,7 @@ def create_schedule_db(periode_date):
 
 def get_hours_total(temp_obj):
     total_jam_kerja = 0
-    p, s, m = 6, 6, 12
+    p, s, m = 6, 7, 11
     total_rest = 0
     if temp_obj['rest_shift'] is not None:
         total_rest = len(temp_obj['rest_shift'])

@@ -7,8 +7,8 @@ import cPickle
 from datetime import datetime
 
 class Memetic():
-    shift = [['P'], ['S'], ['M']]
-    #shift = [['P','P','P','P','O'], ['S','S','O'], ['M','M','O','O']]
+    # shift = [['P'], ['S'], ['M']]
+    shift = [['P','P','P','O'], ['S','S','O'], ['M','M','O','O']]
     hard_penalti = 5
     soft_penalti = 1
 
@@ -346,11 +346,11 @@ class Memetic():
                             elif process == "improvement":
                                 individu[id][hari] = "P"
                             off = 0
-
                     elif shift == "P":
                         siang, malam, off = 0, 0, 0
                         pagi += 1
-                        if pagi == 4:
+
+                        if pagi == 3:
                             if next2shift == "O":
                                 if process == "fitness":
                                     pelanggaran_off_day += 1
@@ -361,18 +361,15 @@ class Memetic():
                                 if process == "fitness":
                                     pelanggaran_off_day += 1
                                 elif process == "improvement":
-                                    self.replace_shift(individu[id], hari, 4)
+                                    self.replace_shift(individu[id], hari, pagi)
                                 pagi = 0
                             elif nextshift != "O" and nextshift != "E":
                                 if process == "fitness":
                                     pelanggaran_off_day += 1
                                 elif process == "improvement":
                                     individu[id][hari + 1] = "O"
-                                    # if next2shift == "O" and next3shift != "O":
-                                    #     individu[id][hari + 2] = "P"
-
                                 pagi = 0
-                        elif pagi < 4:
+                        elif pagi < 3:
                             if nextshift == "O":
                                 if process == "fitness":
                                     pelanggaran_off_day += 1
@@ -591,9 +588,16 @@ class Memetic():
 
     def working_hours(self, individu, process="fitness", debug=False):
         pelanggaran_total = 0
-        p, s, m = 6,6,12
-        min_hours = 144
-        max_hours = 192
+        p, s, m = 6,7,11
+        min_hours = 136
+        max_hours = 170
+        # if self.hari > 30:
+        #     max_hours = 168
+        # else:
+        #     max_hours = 160
+
+        # min_hours = 132
+        # max_hours = 165
         for id, bdn_w_sch in self.bidan_w_schedule.items():
             pelanggaran = 0
             if bdn_w_sch["officer"] == "SN" or bdn_w_sch["officer"] == "JR":
