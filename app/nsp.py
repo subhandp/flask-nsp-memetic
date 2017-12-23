@@ -588,7 +588,7 @@ class Memetic():
 
     def working_hours(self, individu, process="fitness", debug=False):
         pelanggaran_total = 0
-        p, s, m = 6,7,11
+        p, s, m = 6,6,12
         min_hours = 136
         max_hours = 170
         # if self.hari > 30:
