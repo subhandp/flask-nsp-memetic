@@ -591,13 +591,6 @@ class Memetic():
         p, s, m = 6,6,12
         min_hours = 136
         max_hours = 170
-        # if self.hari > 30:
-        #     max_hours = 168
-        # else:
-        #     max_hours = 160
-
-        # min_hours = 132
-        # max_hours = 165
         for id, bdn_w_sch in self.bidan_w_schedule.items():
             pelanggaran = 0
             if bdn_w_sch["officer"] == "SN" or bdn_w_sch["officer"] == "JR":
