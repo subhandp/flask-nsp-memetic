@@ -901,7 +901,7 @@ def generate_pattern_schedule(periode_date, days):
                         else:
                             start = False
 
-                    if Bidan.query.get(id).officer == "KT" or Bidan.query.get(id).officer == "KR":
+                    if Bidan.query.get(id).officer == "KT" or Bidan.query.get(id).officer == "KR" or Bidan.query.get(id).officer == "Pekarya_Sirus":
                         pola_pagi = 6
                         pola_pagi = pola_pagi - pg
                         rest = ["P" for i in range(pola_pagi)]

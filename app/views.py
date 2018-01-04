@@ -319,7 +319,9 @@ def penjadwalan_proses(slug):
            shift_list(table_query.filter((Bidan.tim == "tim2") & (Bidan.officer != "KT")).order_by(Bidan.id.asc()).all()),
            shift_list(table_query.filter((Bidan.tim == "tim3") & (Bidan.officer != "KT")).order_by(Bidan.id.asc()).all())]
 
-    table = {"kr": shift_list(table_query.filter(Bidan.officer == "KR").all()), "kt": kt, "tim": tim}
+    persir = shift_list(table_query.filter(Bidan.officer == "Pekarya_Sirus").order_by(Bidan.id.asc()).all())
+
+    table = {"kr": shift_list(table_query.filter(Bidan.officer == "KR").all()), "kt": kt, "tim": tim, "persir": persir}
 
     return render_template('penjadwalan.html', table=table, periode=periode_db, days=days, scheduling_process=logs)
 

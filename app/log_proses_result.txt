@@ -1,12 +1,12 @@
-PERIODE: 10-2017
+PERIODE: 01-2018
 TOTAL HARI: 31
-WAKTU EKSEKUSI: 0:00:30.250178
-TERMINASI: Fitness sempurna
-GENERASI: 22
-FITNESS: 1.000000
-TOTAL PELANGGARAN: 0
+WAKTU EKSEKUSI: 0:10:07.468943
+TERMINASI: Stopped from client
+GENERASI: 673
+FITNESS: 0.008197
+TOTAL PELANGGARAN: 29
 DETAIL: 
----min_bidan: 0
----pairshift: 0
----day_off: 0
----working_hours: 0
+---min_bidan: 20
+---pairshift: 6
+---day_off: 1
+---working_hours: 2

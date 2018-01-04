@@ -56,6 +56,7 @@ class SchedulesModelView(BaseModelView):
     }
 
     form_columns = ['bidan', 'bidan_id', 'shift', 'rest_shift', 'periode']
+
     _tim_choices = [(choice, label) for choice, label in [
         ('none', 'None'),
         ('tim1', 'Tim 1'),
@@ -68,6 +69,7 @@ class SchedulesModelView(BaseModelView):
         ('KT', 'Kepala Tim (KT)'),
         ('SN', 'Senior (SN)'),
         ('JR', 'Junior (JR)'),
+        ('Pekarya_Sirus', 'Pekarya dan Sirus'),
     ]]
 
     column_choices = {
@@ -111,6 +113,7 @@ class BidanModelView(BaseModelView):
         ('KT', 'Kepala Tim (KT)'),
         ('SN', 'Senior (SN)'),
         ('JR', 'Junior (JR)'),
+        ('Pekarya_Sirus', 'Pekarya dan Sirus'),
     ]]
 
     column_choices = {
