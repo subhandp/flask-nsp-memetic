@@ -316,7 +316,7 @@
 
                         {% if table['tim'][i] is defined and table['tim'][i]|length > 0 %}
                             <tr>
-                              <td><strong>TIM {{ loop.index }}</strong></td>
+                              <td colspan="2"><strong>TIM {{ loop.index }}</strong></td>
                             </tr>
 
                             <tr>
@@ -355,41 +355,30 @@
 
                     {% endfor %}
 
-                  {% if table['persir'] is defined %}
+                  {% if table['persir'] is defined and table['persir']|length > 0 %}
                         <tr>
-                                  <td><strong>Perkarya dan Sirus</strong></td>
+                                  <td colspan="2"><strong>Perkarya dan Sirus</strong></td>
                         </tr>
+
                         {% for table in table['persir'] %}
+                                  <tr>
+                                    <td class="table-number">-</td>
+                                    <td>{{ table.name }} ({{table.officer}})</td>
+                                    <td>{{ table.nip|default('<unknown>', True) }}</td>
 
+                                    {{ shift_element(table,days) }}
 
-                              <td>{{ table.name }} ({{table.officer}})</td>
-                              <td>{{ table.nip|default('<unknown>', True) }}</td>
+                                      <td>{{ table.total_jam_kerja}}</td>
 
-                              {{ shift_element(table,days) }}
-
-                            <td>{{ table.total_jam_kerja}}</td>
-                              <td>
-                                <!-- <a href="#">Edit</a> -->
-                                <button type="button" class="btn btn-default btn-xs edit-rest" id={{table.schedule_id}} >Edit</button>
-                              </td>
+                                    <td>
+                                        <button type="button" class="btn btn-default btn-xs edit-rest" id={{table.schedule_id}} >Edit</button>
+                                    </td>
+                                  </tr>
                         {% endfor %}
+
+
                     {% endif %}
 
-                  {% for table in table['tim'][i] %}
-                              <tr>
-                                <td class="table-number">-</td>
-                                <td>{{ table.name }} ({{table.officer}})</td>
-                                <td>{{ table.nip|default('<unknown>', True) }}</td>
-
-                                {{ shift_element(table,days) }}
-
-                                  <td>{{ table.total_jam_kerja}}</td>
-
-                                <td>
-                                    <button type="button" class="btn btn-default btn-xs edit-rest" id={{table.schedule_id}} >Edit</button>
-                                </td>
-                              </tr>
-                            {% endfor %}
 
                   </tbody>
                 </table>

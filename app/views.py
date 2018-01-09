@@ -139,6 +139,7 @@ def homepage():
         .join(Periode) \
         .add_columns(Schedules.id.label("schedule_id"), Schedules.officer, Schedules.nip, Schedules.name, Schedules.shift, Schedules.rest_shift, Schedules.tim, Periode.id, Periode.periode)
 
+
     table_periode = table_query.order_by(Periode.periode.desc()).group_by(Periode.periode).all()
     list_periode = []
     for periode in table_periode:
@@ -156,6 +157,7 @@ def homepage():
     periode_date = datetime.date(int(periode_split[0]), int(periode_split[1]), 1)
     days = calendar.monthrange(periode_date.year, periode_date.month)[1]
 
+
     kt = [shift_list(table_query.filter((Schedules.officer == "KT") & (Schedules.tim == "tim1")).filter(Periode.periode == periode_date).all()),
           shift_list(table_query.filter((Schedules.officer == "KT") & (Schedules.tim == "tim2")).filter(Periode.periode == periode_date).all()),
           shift_list(table_query.filter((Schedules.officer == "KT") & (Schedules.tim == "tim3")).filter(Periode.periode == periode_date).all())]
@@ -164,8 +166,10 @@ def homepage():
            shift_list(table_query.filter((Schedules.tim == "tim2") & (Schedules.officer != "KT")).filter(Periode.periode == periode_date).order_by(Schedules.bidan_id.asc()).all()),
            shift_list(table_query.filter((Schedules.tim == "tim3") & (Schedules.officer != "KT")).filter(Periode.periode == periode_date).order_by(Schedules.bidan_id.asc()).all())]
 
+    persir = shift_list(table_query.filter(Schedules.officer == "persir").order_by(Schedules.id.asc()).filter(Periode.periode == periode_date).all())
+
     periode_schedule = {"kr": shift_list(table_query.filter(Schedules.officer == "KR").filter(Periode.periode == periode_date).all()),
-                        "kt": kt, "tim": tim}
+                        "kt": kt, "tim": tim, "persir": persir}
 
     # print(json.dumps(periode_schedule, indent=4, sort_keys=False))
     return render_template('home.html', periode=list_periode, table=periode_schedule, periode_value=periode_periode, days=days)
@@ -197,6 +201,12 @@ def penjadwalan_proses(slug):
         .filter(Periode.periode == periode_date)
     if periode_date:
         days = calendar.monthrange(periode_date.year, periode_date.month)[1]
+
+        ahads = []
+        for d in range(days):
+            if datetime.date(periode_date.year, periode_date.month, d+1).weekday() == 6:
+                ahads.append(d)
+
         periode_db = Periode.query.filter(Periode.periode == periode_date).first()
         if not periode_db:
             create_schedule_db(periode_date)
@@ -213,6 +223,7 @@ def penjadwalan_proses(slug):
                     init_data.update(setting_algoritma)
                     init_data["days"] = days
                     init_data["periode_id"] = periode_db.id
+                    init_data["ahads"] = ahads
 
                     meme = Memetic(init_data)
                     meme.initial_populasi()
@@ -262,7 +273,7 @@ def penjadwalan_proses(slug):
                 elif request.json['ajax'] == 'get-detail-min-bidan':
                     hari = int(request.json['hari'])
                     pagi, siang, malam = [], [], []
-                    current_schedule = table_query.all()
+                    current_schedule = table_query.filter(Bidan.officer != "persir").all()
                     counter = 0
                     for sch in current_schedule:
                         counter += 1
@@ -319,7 +330,7 @@ def penjadwalan_proses(slug):
            shift_list(table_query.filter((Bidan.tim == "tim2") & (Bidan.officer != "KT")).order_by(Bidan.id.asc()).all()),
            shift_list(table_query.filter((Bidan.tim == "tim3") & (Bidan.officer != "KT")).order_by(Bidan.id.asc()).all())]
 
-    persir = shift_list(table_query.filter(Bidan.officer == "Pekarya_Sirus").order_by(Bidan.id.asc()).all())
+    persir = shift_list(table_query.filter(Bidan.officer == "persir").order_by(Bidan.id.asc()).all())
 
     table = {"kr": shift_list(table_query.filter(Bidan.officer == "KR").all()), "kt": kt, "tim": tim, "persir": persir}
 

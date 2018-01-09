@@ -31,6 +31,7 @@ class Memetic():
         self.periode_id = init_data["periode_id"]
         self.populasi = int(init_data["populasi"])
         self.generasi = int(init_data["generasi"])
+        self.ahads = init_data["ahads"]
         self.probabilitas_mutasi = float(init_data["prob_mutasi"])
         self.probabilitas_rekombinasi = float(init_data["prob_rekombinasi"])
         self.probabilitas_local_search = float(init_data["prob_local_search"])
@@ -104,9 +105,15 @@ class Memetic():
 
     # print(json.dumps(self.lingkungan_individu[0], indent=4, sort_keys=False))
     def initial_populasi(self):
-        static = ['P', 'P', 'P', 'P', 'P', 'P', 'O', 'P', 'P', 'P', 'P', 'P', 'P', 'O', 'P', 'P', 'P', 'P', 'P', 'P',
-                  'O', 'P', 'P', 'P', 'P', 'P', 'P', 'O', 'P', 'P', 'P', 'P', 'P', 'P', 'O'];
-        static_shift = static[0:self.hari]
+
+        static_shift = []
+
+        for d in range(self.hari):
+            static_shift.append('P')
+
+        for ahad in self.ahads:
+            static_shift[ahad] = 'O'
+
         for i in range(self.populasi):
             individu = {}
             for bdn in Bidan.query.all():
@@ -220,7 +227,7 @@ class Memetic():
             id = bidan_id[rand_id]
             restshift = self.bidan_w_schedule[id]['rest_shift']
             officer = self.bidan_w_schedule[id]["officer"]
-            if officer != "KT" and officer != "KR":
+            if officer != "KT" and officer != "KR" and officer != "persir":
                 if data['jenis'] == officer or data['jenis'] == "JR":
                     if restshift != "CLEAR":
                         if restshift[hari] == "-":
@@ -589,8 +596,8 @@ class Memetic():
     def working_hours(self, individu, process="fitness", debug=False):
         pelanggaran_total = 0
         p, s, m = 6,6,12
-        min_hours = 136
-        max_hours = 170
+        min_hours = 120
+        max_hours = 180
         for id, bdn_w_sch in self.bidan_w_schedule.items():
             pelanggaran = 0
             if bdn_w_sch["officer"] == "SN" or bdn_w_sch["officer"] == "JR":
@@ -865,6 +872,7 @@ class Memetic():
         return {"stop": True, "data": data}
 
 
+
 def generate_pattern_schedule(periode_date, days):
     periode_db = Periode.query.filter(Periode.periode == periode_date).first()
     last_periode = Periode.query.order_by(Periode.periode.desc()).filter(Periode.periode < periode_db.periode).first()
@@ -901,14 +909,17 @@ def generate_pattern_schedule(periode_date, days):
                         else:
                             start = False
 
-                    if Bidan.query.get(id).officer == "KT" or Bidan.query.get(id).officer == "KR" or Bidan.query.get(id).officer == "Pekarya_Sirus":
+                    if Bidan.query.get(id).officer == "KT" or Bidan.query.get(id).officer == "KR" or Bidan.query.get(id).officer == "persir":
+                        print "MASUK>>>>>>>>>>>>>>>>>>>>>>>"
+                        print Bidan.query.get(id).name
                         pola_pagi = 6
                         pola_pagi = pola_pagi - pg
                         rest = ["P" for i in range(pola_pagi)]
                         rest.append("O")
                         temp_static = ",".join(rest)
+                        print temp_static
                     else:
-                        if pg >= 4:
+                        if pg >= 3:
                             temp = "O"
                         else:
                             temp = "CLEAR"
@@ -939,7 +950,7 @@ def generate_pattern_schedule(periode_date, days):
                         temp = "CLEAR"
 
 
-                if Bidan.query.get(id).officer == "KT" or Bidan.query.get(id).officer == "KR":
+                if Bidan.query.get(id).officer == "KT" or Bidan.query.get(id).officer == "KR" or Bidan.query.get(id).officer == "persir":
                     temps = temp_static
                 else:
                     temps = temp

@@ -9,7 +9,7 @@ def first_data():
     db.session.commit()
 
     fp = []
-    fp.append(Periode(periode=datetime.date(2017, 9, 1)))
+    fp.append(Periode(periode=datetime.date(2017, 12, 1)))
     db.session.add_all(fp)
     db.session.commit()
 
@@ -45,6 +45,10 @@ def first_data():
     n.append(Bidan(name="Novita Ra'bung, A.Md.Keb", nip='198711212011012011', officer='JR', tim='tim3'))
     n.append(Bidan(name='Yunita Setianing Pratiwi, A.Md.Keb.', nip='198801202011012008', officer='JR', tim='tim3'))
     n.append(Bidan(name='Sri Wahyuni, A.Md.Keb', nip='kontrak', officer='JR', tim='tim3'))
+
+    n.append(Bidan(name='Sri Wahyudi, A.Md.Keb', nip='kontrak', officer='persir', tim='none'))
+    n.append(Bidan(name='Sri ansari, A.Md.Keb', nip='kontrak', officer='persir', tim='none'))
+
     db.session.add_all(n)
     db.session.commit()
 
@@ -80,6 +84,9 @@ def first_data():
     n.append(Schedules(bidan_id=27, periode_id=1, shift='S,S,O,P,P,O,M,M,O,O,P,P,P,O,S,S,S,O,P,P,M,M,O,O,P,P,S,O,P,P'))
     n.append(Schedules(bidan_id=28, periode_id=1, shift='O,O,O,P,P,P,O,P,M,M,O,O,P,P,P,P,O,S,S,S,O,P,M,M,O,O,P,P,P,O'))
     n.append(Schedules(bidan_id=29, periode_id=1, shift='O,O,M,M,O,O,P,P,P,O,P,P,M,M,O,O,P,P,P,O,P,P,S,S,O,P,P,S,O,P'))
+
+    n.append(Schedules(bidan_id=30, periode_id=1, shift='O,O,O,P,P,P,P,P,P,O,P,P,P,P,P,P,O,P,P,P,P,P,P,O,P,P,P,P,P,P'))
+    n.append(Schedules(bidan_id=31, periode_id=1, shift='O,O,O,P,P,P,P,P,P,O,P,P,P,P,P,P,O,P,P,P,P,P,P,O,P,P,P,P,P,P'))
 
     db.session.add_all(n)
     db.session.commit()

@@ -13,7 +13,30 @@ class AdminAuthentication(object):
         return g.user.is_authenticated
 
 class BaseModelView(AdminAuthentication, ModelView):
-    pass
+    _tim_choices = [(choice, label) for choice, label in [
+        ('none', 'None'),
+        ('tim1', 'Tim 1'),
+        ('tim2', 'Tim 2'),
+        ('tim3', 'Tim 3'),
+    ]]
+
+    _officer_choices = [(choice, label) for choice, label in [
+        ('KR', 'Kepala Ruangan (KR)'),
+        ('KT', 'Kepala Tim (KT)'),
+        ('SN', 'Senior (SN)'),
+        ('JR', 'Junior (JR)'),
+        ('persir', 'Pekarya dan Sirus'),
+    ]]
+
+    column_choices = {
+        'tim': _tim_choices,
+        'officer': _officer_choices
+    }
+
+    form_choices = {
+        'tim': _tim_choices,
+        'officer': _officer_choices
+    }
 
 class IndexView(AdminIndexView):
     @expose('/')
@@ -57,30 +80,6 @@ class SchedulesModelView(BaseModelView):
 
     form_columns = ['bidan', 'bidan_id', 'shift', 'rest_shift', 'periode']
 
-    _tim_choices = [(choice, label) for choice, label in [
-        ('none', 'None'),
-        ('tim1', 'Tim 1'),
-        ('tim2', 'Tim 2'),
-        ('tim3', 'Tim 3'),
-    ]]
-
-    _officer_choices = [(choice, label) for choice, label in [
-        ('KR', 'Kepala Ruangan (KR)'),
-        ('KT', 'Kepala Tim (KT)'),
-        ('SN', 'Senior (SN)'),
-        ('JR', 'Junior (JR)'),
-        ('Pekarya_Sirus', 'Pekarya dan Sirus'),
-    ]]
-
-    column_choices = {
-        'tim': _tim_choices,
-        'officer': _officer_choices
-    }
-
-    form_choices = {
-        'tim': _tim_choices,
-        'officer': _officer_choices
-    }
 
     def on_model_change(self, form, model, is_created):
         if is_created:
@@ -100,33 +99,6 @@ class BidanModelView(BaseModelView):
     column_list = ['name', 'nip', 'officer', 'tim']
     form_columns = ['name', 'nip', 'officer', 'tim']
     column_filters = ['tim', 'name', 'officer']
-
-    _tim_choices = [(choice, label) for choice, label in [
-        ('none', 'None'),
-        ('tim1', 'Tim 1'),
-        ('tim2', 'Tim 2'),
-        ('tim3', 'Tim 3'),
-    ]]
-
-    _officer_choices = [(choice, label) for choice, label in [
-        ('KR', 'Kepala Ruangan (KR)'),
-        ('KT', 'Kepala Tim (KT)'),
-        ('SN', 'Senior (SN)'),
-        ('JR', 'Junior (JR)'),
-        ('Pekarya_Sirus', 'Pekarya dan Sirus'),
-    ]]
-
-    column_choices = {
-        'tim': _tim_choices,
-        'officer': _officer_choices
-    }
-
-    form_choices = {
-        'tim': _tim_choices,
-        'officer': _officer_choices
-    }
-
-
 
 
 admin = Admin(app, 'Penjadwalan Administrator', index_view=IndexView())
