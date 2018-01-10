@@ -26,7 +26,6 @@
 <div class="panel panel-default">
 		  <div class="panel-heading">
 		  	  <div class="form-group">
-		    <label for="select-periode">Jadwal Tenaga Kebidanan</label>
 				  <form action="/" id="form-periode" class="form form-inline" method="post">
 					  <select  name="select-periode" id="select-periode">
 						{% for pr in periode %}
@@ -36,10 +35,36 @@
                       <button id="cetak-jadwal" class="btn btn-default pull-right"> <i class="fa fa-print" aria-hidden="true"></i>  Cetak</button>
 				  </form>
 
-		  </div>
+		        </div>
 		  <!--<button id="ubah-rest-pattern" class="btn btn-success"> <i class="fa fa-download" aria-hidden="true"></i>  Download Jadwal</button>-->
 		  </div>
 		  <div class="panel-body">
+
+              <div class="row">
+                    <div class="col-xs-6 block">
+                        <img class="pull-left gap-right" style="width: 100px; heigth: 100px; margin:10px;" src="{{ url_for('static', filename='images/logo-sulteng.png')}}" alt="">
+                        <H4>RSUD UNDATA PALU</H4>
+                        <H4>PROVINSI SULAWESI TENGAH</H4>
+
+                        <H3><strong>DAFTAR DINAS BULANAN</strong></H3>
+                    </div>
+                    <div class="col-xs-6 col-xs-push-4 block">
+                        <table>
+                            <tr>
+                                <td style="padding-right:30px;"><h5>RUANGAN</h5></td>
+                                <td><h5>: MATAHARI</h5></td>
+                            </tr>
+                             <tr>
+                                <td><h5>BULAN</h5></td>
+                                <td><h5>: {{ current_periode['bulan'] }}</h5></td>
+                            </tr>
+                             <tr>
+                                <td><h5>TAHUN</h5></td>
+                                <td><h5>: {{ current_periode['tahun'] }}</h5></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
 
                 <table class="table table-bordered table-responsive">
                   <thead>
@@ -64,10 +89,7 @@
                           {{ shift_element(table,days) }}
 
                         <td>{{ table.total_jam_kerja}}</td>
-                            <td>
-                                <!-- <a href="#">Edit</a> -->
-                                <button type="button" class="btn btn-default btn-xs edit-rest" id={{table.schedule_id}} >Edit</button>
-                            </td>
+
                       {% endfor %}
 
                     </tr>
@@ -90,9 +112,7 @@
 
                                 <td>{{ table.total_jam_kerja}}</td>
 
-                                  <td>
-                                    <button type="button" class="btn btn-default btn-xs edit-rest" id={{table.schedule_id}} >Edit</button>
-                                  </td>
+
                               {% endfor %}
                             </tr>
 
@@ -106,9 +126,6 @@
 
                                   <td>{{ table.total_jam_kerja}}</td>
 
-                                <td>
-                                    <button type="button" class="btn btn-default btn-xs edit-rest" id={{table.schedule_id}} >Edit</button>
-                                </td>
                               </tr>
                             {% endfor %}
                         {% endif %}
@@ -131,9 +148,6 @@
 
                                       <td>{{ table.total_jam_kerja}}</td>
 
-                                    <td>
-                                        <button type="button" class="btn btn-default btn-xs edit-rest" id={{table.schedule_id}} >Edit</button>
-                                    </td>
                                   </tr>
                         {% endfor %}
 

@@ -155,6 +155,9 @@ def homepage():
 
     periode_split = periode_periode.split("-")
     periode_date = datetime.date(int(periode_split[0]), int(periode_split[1]), 1)
+
+    current_periode = {"bulan": periode_date.strftime("%B"), "tahun": periode_date.strftime("%Y")}
+
     days = calendar.monthrange(periode_date.year, periode_date.month)[1]
 
 
@@ -172,7 +175,7 @@ def homepage():
                         "kt": kt, "tim": tim, "persir": persir}
 
     # print(json.dumps(periode_schedule, indent=4, sort_keys=False))
-    return render_template('home.html', periode=list_periode, table=periode_schedule, periode_value=periode_periode, days=days)
+    return render_template('home.html', periode=list_periode, table=periode_schedule, periode_value=periode_periode, days=days, current_periode=current_periode)
 
 
 @app.route("/penjadwalan/", methods=['GET', 'POST'])
