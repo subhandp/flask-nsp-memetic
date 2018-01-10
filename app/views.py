@@ -291,13 +291,16 @@ def penjadwalan_proses(slug):
                         else:
                             if sch.shift != "":
                                 temp_shift = sch.shift.split(",")
+                            else:
+                                temp_shift = None
 
-                        if temp_shift[hari] == "P":
-                            pagi.append(t)
-                        elif temp_shift[hari] == "S":
-                            siang.append(t)
-                        elif temp_shift[hari] == "M":
-                            malam.append(t)
+                        if temp_shift is not None:
+                            if temp_shift[hari] == "P":
+                                pagi.append(t)
+                            elif temp_shift[hari] == "S":
+                                siang.append(t)
+                            elif temp_shift[hari] == "M":
+                                malam.append(t)
 
 
                     return json.dumps({'status': 'OK', 'pagi': pagi, 'siang': siang, 'malam': malam})

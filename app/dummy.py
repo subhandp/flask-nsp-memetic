@@ -86,8 +86,8 @@ def first_data():
     n.append(Schedules(bidan_id=29, periode_id=1, shift='P,M,M,O,O,P,P,S,S,O,P,P,M,M,O,O,P,P,S,S,O,P,M,M,O,O,P,P,S,S,O'))
 
 
-    n.append(Schedules(bidan_id=30, periode_id=1, shift='O,O,O,P,P,P,P,P,P,O,P,P,P,P,P,P,O,P,P,P,P,P,P,O,P,P,P,P,P,P'))
-    n.append(Schedules(bidan_id=31, periode_id=1, shift='O,O,O,P,P,P,P,P,P,O,P,P,P,P,P,P,O,P,P,P,P,P,P,O,P,P,P,P,P,P'))
+    n.append(Schedules(bidan_id=30, periode_id=1, shift='O,P,O,P,P,P,P,P,P,O,P,P,P,P,P,P,O,P,P,P,P,P,P,O,O,P,P,P,P,P,O'))
+    n.append(Schedules(bidan_id=31, periode_id=1, shift='O,P,O,P,P,P,P,P,P,O,P,P,P,P,P,P,O,P,P,P,P,P,P,O,O,P,P,P,P,P,O'))
 
     db.session.add_all(n)
     db.session.commit()
