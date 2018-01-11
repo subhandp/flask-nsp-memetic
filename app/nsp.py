@@ -756,7 +756,6 @@ class Memetic():
 
 
 
-
     def local_search(self):
         for individu in self.lingkungan_individu:
             rand_value = random.uniform(0, 1)
@@ -770,6 +769,10 @@ class Memetic():
 
                 self.day_off(individu, "improvement")
 
+        self.fitness()
+        self.elitist()
+
+
 
     def elitist(self):
         i, value = max(enumerate(self.lingkungan_individu_fitness), key=operator.itemgetter(1))
@@ -778,20 +781,12 @@ class Memetic():
             self.elit_individu["individu"] = copy.deepcopy(self.lingkungan_individu[i])
 
         total_remove = len(self.lingkungan_individu) - self.populasi
-        total_remove += 1
 
         for i in range(total_remove):
             index, value = min(enumerate(self.lingkungan_individu_fitness), key=operator.itemgetter(1))
             del self.lingkungan_individu[index]
             del self.lingkungan_individu_fitness[index]
 
-        elit = copy.deepcopy(self.elit_individu["individu"])
-        self.lingkungan_individu.append(elit)
-
-
-    def population_replacement(self):
-        self.fitness()
-        self.elitist()
 
 
     def termination(self, generasi):

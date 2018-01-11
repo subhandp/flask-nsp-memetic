@@ -236,7 +236,6 @@ def penjadwalan_proses(slug):
                         meme.recombination()
                         meme.mutation()
                         meme.local_search()
-                        meme.population_replacement()
                         terminasi = meme.termination(generasi)
                         if terminasi["stop"]:
                             log_n_save_proses_result(terminasi["data"], slug, days, periode_db.id)

@@ -46,8 +46,8 @@ def first_data():
     n.append(Bidan(name='Yunita Setianing Pratiwi, A.Md.Keb.', nip='198801202011012008', officer='JR', tim='tim3'))
     n.append(Bidan(name='Sri Wahyuni, A.Md.Keb', nip='kontrak', officer='JR', tim='tim3'))
 
-    n.append(Bidan(name='Sri Wahyudi, A.Md.Keb', nip='kontrak', officer='persir', tim='none'))
-    n.append(Bidan(name='Sri ansari, A.Md.Keb', nip='kontrak', officer='persir', tim='none'))
+    n.append(Bidan(name='Werdawati', nip='197802112010012002', officer='persir', tim='none'))
+    n.append(Bidan(name='Husna', nip='kontrak', officer='persir', tim='none'))
 
     db.session.add_all(n)
     db.session.commit()
