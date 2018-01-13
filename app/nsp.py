@@ -320,6 +320,17 @@ class Memetic():
                         else:
                             next3shift = "E"
 
+                    if hari - 2 >= 0 and hari - 2 <= self.hari - 1:
+                        if restshift != "CLEAR":
+                            if restshift[hari - 2] != "-":
+                                prev2shift = restshift[hari - 2]
+                            else:
+                                prev2shift = individu[id][hari - 2]
+                        else:
+                            prev2shift = individu[id][hari - 2]
+                    else:
+                        prev2shift = None
+
 
                     if restshift != "CLEAR":
                         if hari + 1 <= self.hari - 1:
@@ -338,6 +349,7 @@ class Memetic():
                         else:
                             prevrestshift = None
 
+
                         if hari + 2 <= self.hari - 1:
                             if restshift[hari + 2] != "-":
                                 next2restshift = restshift[hari + 2]
@@ -354,11 +366,18 @@ class Memetic():
                     if shift == "O":
                         siang, malam, pagi = 0, 0, 0
                         off += 1
-                        if prevrestshift == "O" and immutable_shift is None:
+                        if off == 2 and immutable_shift is None and prev2shift == "P":
+                            if process == "fitness":
+                                pelanggaran_off += 1
+                            elif process == "improvement":
+                                individu[id][hari] = "S"
+                            off = 0
+                        elif prevrestshift == "O" and immutable_shift is None:
                             if process == "fitness":
                                 pelanggaran_off += 1
                             elif process == "improvement":
                                 individu[id][hari] = "P"
+                            off = 0
                         elif off == 1 and hari == 0 and immutable_shift is None:
                             if process == "fitness":
                                 pelanggaran_off += 1
@@ -375,7 +394,7 @@ class Memetic():
                         siang, malam, off = 0, 0, 0
                         pagi += 1
 
-                        if pagi == 3:
+                        if pagi == 4:
                             if next2shift == "O":
                                 if process == "fitness":
                                     pelanggaran_off_day += 1
@@ -394,7 +413,7 @@ class Memetic():
                                 elif process == "improvement":
                                     individu[id][hari + 1] = "O"
                                 pagi = 0
-                        elif pagi < 3:
+                        elif pagi < 2:
                             if nextshift == "O":
                                 if process == "fitness":
                                     pelanggaran_off_day += 1
