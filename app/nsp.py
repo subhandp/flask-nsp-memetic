@@ -40,8 +40,6 @@ class Memetic():
     def detail_solusi(self):
         print "FITNESS TERTINGGI: %f" % (self.elit_individu["fitness"])
         self.single_fitness(self.elit_individu["individu"], True)
-        # self.print_individu(self.elit_individu["individu"])
-        # self.single_fitness(self.elit_individu["individu"], True)
 
 
     def print_individu(self, individu):
@@ -332,6 +330,14 @@ class Memetic():
                         else:
                             nextrestshift = None
 
+                        if hari - 1 >= 0 and hari - 1 <= self.hari - 1:
+                            if restshift[hari - 1] != "-":
+                                prevrestshift = restshift[hari - 1]
+                            else:
+                                prevrestshift = None
+                        else:
+                            prevrestshift = None
+
                         if hari + 2 <= self.hari - 1:
                             if restshift[hari + 2] != "-":
                                 next2restshift = restshift[hari + 2]
@@ -342,12 +348,24 @@ class Memetic():
                     else:
                         nextrestshift = None
                         next2restshift = None
+                        prevrestshift = None
 
 
                     if shift == "O":
                         siang, malam, pagi = 0, 0, 0
                         off += 1
-                        if off > 2:
+                        if prevrestshift == "O" and immutable_shift is None:
+                            if process == "fitness":
+                                pelanggaran_off += 1
+                            elif process == "improvement":
+                                individu[id][hari] = "P"
+                        elif off == 1 and hari == 0 and immutable_shift is None:
+                            if process == "fitness":
+                                pelanggaran_off += 1
+                            elif process == "improvement":
+                                individu[id][hari] = "P"
+                            off = 0
+                        elif off > 2:
                             if process == "fitness":
                                 pelanggaran_off += 1
                             elif process == "improvement":
@@ -757,17 +775,26 @@ class Memetic():
 
 
     def local_search(self):
-        for individu in self.lingkungan_individu:
+        for index, individu in enumerate(self.lingkungan_individu):
             rand_value = random.uniform(0, 1)
 
             if rand_value < self.probabilitas_local_search:
-                self.pairshift_overflow(individu, "improvement")
 
-                self.working_hours(individu, "improvement")
+                before_improve = self.single_fitness(individu)
+                temp_individu = copy.deepcopy(individu)
 
-                self.min_bidan(individu, "improvement")
+                self.pairshift_overflow(temp_individu, "improvement")
 
-                self.day_off(individu, "improvement")
+                self.working_hours(temp_individu, "improvement")
+
+                self.min_bidan(temp_individu, "improvement")
+
+                self.day_off(temp_individu, "improvement")
+
+                after_improve = self.single_fitness(temp_individu)
+
+                if after_improve > before_improve:
+                    self.lingkungan_individu[index] = temp_individu
 
         self.fitness()
         self.elitist()
