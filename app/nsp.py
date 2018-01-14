@@ -161,11 +161,12 @@ class Memetic():
 
         return shift_count_result
 
-
     def min_bidan(self, individu, process="fitness", debug=False):
         total_pelanggaran = 0
         data = {}
         for hari in range(self.hari):
+            sn_err = 0
+            jr_err = 0
             pelanggaran = 0
             result = self.min_bidan_shift_count(individu, hari)
             jenis_shift = {"shift_pagi": "P", "shift_siang": "S", "shift_malam": "M"}
@@ -179,31 +180,26 @@ class Memetic():
                         data['total_need'] = self.min_jenis_shift[js]['sn'] - result[js]['sn']
                         data['jenis'] = 'SN'
                         self.min_bidan_improve(individu, data)
+                    sn_err += 1
                 if result[js]["jr"] < self.min_jenis_shift[js]["jr"]:
-                    melanggar = False
-                    if result[js]["sn"] > self.min_jenis_shift[js]["sn"]:
-                        total_result = result[js]['sn'] + result[js]['jr']
-                        total_min = self.min_jenis_shift[js]["sn"] + self.min_jenis_shift[js]["jr"]
-                        if total_result < total_min:
-                            melanggar = True
-                    else:
-                        melanggar = True
-
-                    if process == "fitness" and melanggar:
+                    if process == "fitness":
                         pelanggaran += 1
-                    elif process == "improvement" and melanggar:
+                    elif process == "improvement":
                         data['hari'] = hari
                         data['need_shift'] = js_cell
                         data['total_need'] = self.min_jenis_shift[js]['jr'] - self.min_jenis_shift[js]['jr']
                         data['jenis'] = 'JR'
                         self.min_bidan_improve(individu, data)
+                    jr_err += 1
 
             if process == "fitness":
                 total_pelanggaran += pelanggaran
 
             if debug:
                 if pelanggaran > 0:
-                    print "[MIN BIDAN] PELANGGARAN hari - %d" % (hari)
+                    print "[MIN BIDAN] PELANGGARAN hari - %d" % (hari + 1)
+                    print "SN: %d" % (sn_err)
+                    print "JR: %d " % (jr_err)
                     print "Pelanggaran: %d" % (pelanggaran)
 
         if debug:
@@ -226,7 +222,7 @@ class Memetic():
             restshift = self.bidan_w_schedule[id]['rest_shift']
             officer = self.bidan_w_schedule[id]["officer"]
             if officer != "KT" and officer != "KR" and officer != "persir":
-                if data['jenis'] == officer or data['jenis'] == "JR":
+                if data['jenis'] == officer:
                     if restshift != "CLEAR":
                         if restshift[hari] == "-":
                             shift = individu[id][hari]
@@ -413,7 +409,7 @@ class Memetic():
                                 elif process == "improvement":
                                     individu[id][hari + 1] = "O"
                                 pagi = 0
-                        elif pagi < 2:
+                        elif pagi < 3:
                             if nextshift == "O":
                                 if process == "fitness":
                                     pelanggaran_off_day += 1
@@ -818,8 +814,6 @@ class Memetic():
         self.fitness()
         self.elitist()
 
-
-
     def elitist(self):
         i, value = max(enumerate(self.lingkungan_individu_fitness), key=operator.itemgetter(1))
         if value > self.elit_individu["fitness"]:
@@ -827,11 +821,15 @@ class Memetic():
             self.elit_individu["individu"] = copy.deepcopy(self.lingkungan_individu[i])
 
         total_remove = len(self.lingkungan_individu) - self.populasi
+        total_remove += 1
 
         for i in range(total_remove):
             index, value = min(enumerate(self.lingkungan_individu_fitness), key=operator.itemgetter(1))
             del self.lingkungan_individu[index]
             del self.lingkungan_individu_fitness[index]
+
+        elit = copy.deepcopy(self.elit_individu["individu"])
+        self.lingkungan_individu.append(elit)
 
 
 
