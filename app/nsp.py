@@ -960,7 +960,7 @@ def generate_pattern_schedule(periode_date, days):
                         temp_static = ",".join(rest)
                         print temp_static
                     else:
-                        if pg >= 3:
+                        if pg >= 4:
                             temp = "O"
                         else:
                             temp = "CLEAR"
