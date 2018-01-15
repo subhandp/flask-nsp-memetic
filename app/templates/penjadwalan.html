@@ -319,21 +319,21 @@
                               <td colspan="2"><strong>TIM {{ loop.index }}</strong></td>
                             </tr>
 
-                            <tr>
-                              <td class="table-number">-</td>
-                              {% for table in table['kt'][i] %}
-                                  <td>{{ table.name }} ({{table.officer}})</td>
-                                  <td>{{ table.nip|default('<unknown>', True) }}</td>
+                            {% for table in table['kt'][i] %}
+                                <tr>
+                                  <td class="table-number">-</td>
+                                      <td>{{ table.name }} ({{table.officer}})</td>
+                                      <td>{{ table.nip|default('<unknown>', True) }}</td>
 
-                                  {{ shift_element(table,days) }}
+                                      {{ shift_element(table,days) }}
 
-                                <td>{{ table.total_jam_kerja}}</td>
+                                    <td>{{ table.total_jam_kerja}}</td>
 
-                                  <td>
-                                    <button type="button" class="btn btn-default btn-xs edit-rest" id={{table.schedule_id}} >Edit</button>
-                                  </td>
-                              {% endfor %}
-                            </tr>
+                                      <td>
+                                        <button type="button" class="btn btn-default btn-xs edit-rest" id={{table.schedule_id}} >Edit</button>
+                                      </td>
+                                </tr>
+                            {% endfor %}
 
                             {% for table in table['tim'][i] %}
                               <tr>

@@ -101,20 +101,17 @@
                             <tr>
                               <td colspan="2"><strong>TIM {{ loop.index }}</strong></td>
                             </tr>
-
+                            {% for table in table['kt'][i] %}
                             <tr>
                               <td class="table-number">-</td>
-                              {% for table in table['kt'][i] %}
                                   <td>{{ table.name }} ({{table.officer}})</td>
                                   <td>{{ table.nip|default('<unknown>', True) }}</td>
 
                                   {{ shift_element(table,days) }}
 
                                 <td>{{ table.total_jam_kerja}}</td>
-
-
-                              {% endfor %}
                             </tr>
+                        {% endfor %}
 
                             {% for table in table['tim'][i] %}
                               <tr>

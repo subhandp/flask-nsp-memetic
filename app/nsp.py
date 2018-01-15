@@ -809,7 +809,12 @@ class Memetic():
                 after_improve = self.single_fitness(temp_individu)
 
                 if after_improve > before_improve:
-                    self.lingkungan_individu[index] = temp_individu
+                    if after_improve == 1:
+                        self.elit_individu["fitness"] = after_improve
+                        self.elit_individu["individu"] = temp_individu
+                        return
+                    else:
+                        self.lingkungan_individu[index] = temp_individu
 
         self.fitness()
         self.elitist()
