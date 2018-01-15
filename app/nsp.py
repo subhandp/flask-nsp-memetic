@@ -570,7 +570,7 @@ class Memetic():
                                 if process == "fitness":
                                     pelanggaran += 1
                                 elif process == "improvement":
-                                    self.replace_shift(individu[id], hari, 7)
+                                    self.replace_shift(individu[id], hari, h)
 
                             malam = 0
                     elif shift == "S":
@@ -583,7 +583,7 @@ class Memetic():
                                 if process == "fitness":
                                     pelanggaran += 1
                                 elif process == "improvement":
-                                    self.replace_shift(individu[id], hari, 7)
+                                    self.replace_shift(individu[id], hari, h)
                             siang = 0
                     else:
                         malam = 0
@@ -606,7 +606,6 @@ class Memetic():
                                 individu[id][index_hari] = generate_shift[i]
                         else:
                             individu[id][index_hari] = generate_shift[i]
-
 
             if debug:
                 if pelanggaran > 0 or pelanggaran_pola_malam > 0:
