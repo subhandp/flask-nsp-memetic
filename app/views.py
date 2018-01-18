@@ -342,22 +342,6 @@ def penjadwalan_proses(slug):
     return render_template('penjadwalan.html', table=table, periode=periode_db, days=days, scheduling_process=logs)
 
 
-@app.route("/setting/", methods=['GET', 'POST'])
-@login_required
-def setting():
-    min_bidan_data = schedulling_setting('get', 'min_bidan')
-    proses_algo_data = schedulling_setting('get', 'memetika')
-    min_bidan_form = MinBidanForm(data=min_bidan_data)
-    proses_algo_form = ProsesAlgoForm(data=proses_algo_data)
-    if request.method == 'POST':
-        if 'section_proses_algo' in request.form:
-            proses_algo_form = ProsesAlgoForm(request.form)
-            if proses_algo_form.validate():
-                schedulling_setting("set", {"section": 'memetika', "data": request.form})
-                flash('Proses algoritma berhasil diubah.', 'success')
-
-    return render_template('setting.html', min_bidan_form=min_bidan_form, proses_algo_form=proses_algo_form)
-
 @app.route("/logout/")
 def logout():
     logout_user()
