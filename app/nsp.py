@@ -8,7 +8,8 @@ from datetime import datetime
 
 class Memetic():
     # shift = [['P'], ['S'], ['M']]
-    shift = [['P','P','P','O'], ['S','S','O'], ['M','M','O','O']]
+    # shift = [['P','P','P','O'], ['S','S','O'], ['M','M','O','O']]
+    shift = [['P'], ['P', 'P'], ['P', 'P', 'P'], ['P', 'P', 'P', 'O'], ['P', 'P', 'P', 'P', 'O'], ['S'], ['S', 'S', 'O'], ['M', 'M', 'O', 'O']]
     hard_penalti = 5
     soft_penalti = 1
 
