@@ -2,4 +2,5 @@
 env
 *.pyc
 __pycache__
-/app/views.py
+migrations
+nsp.db
