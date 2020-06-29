@@ -1,3 +1,3 @@
 # Flask-NSP-Memetic
 
-Nurse Schedulling Problem using Memetic Algorithm and implemented in FLask framework
+Nurse Schedulling Problem using Memetic Algorithm on Flask framework
